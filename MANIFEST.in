@@ -1,0 +1,1 @@
+include versioneer.py h5preserve/_version.py

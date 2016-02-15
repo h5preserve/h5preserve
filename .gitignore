@@ -1,0 +1,5 @@
+.cache
+.tox
+h5preserve.egg-info
+_build
+.coverage
