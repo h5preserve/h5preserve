@@ -1,6 +1,7 @@
 h5preserve is a thin wrapper around h5py, inspired by camel.
 [![Documentation Status](https://readthedocs.org/projects/h5preserve/badge/?version=latest)](http://h5preserve.readthedocs.org/en/latest/?badge=latest)
 [![Build Status](https://travis-ci.org/aragilar/h5preserve.svg?branch=master)](https://travis-ci.org/aragilar/h5preserve)
+[![Coverage Status](https://codecov.io/github/aragilar/h5preserve/coverage.svg?branch=master)](https://codecov.io/github/aragilar/h5preserve?branch=master)
 [![Version](https://img.shields.io/pypi/v/h5preserve.svg)](https://pypi.python.org/pypi/h5preserve/)
 [![License](https://img.shields.io/pypi/l/h5preserve.svg)](https://pypi.python.org/pypi/h5preserve/)
 [![Wheel](https://img.shields.io/pypi/wheel/h5preserve.svg)](https://pypi.python.org/pypi/h5preserve/)
