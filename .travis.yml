@@ -20,8 +20,14 @@ env:
   - TOXENV=pylint
   - TOXENV=docs
 
+before_install:
+  - pip install codecov
+
 install:
   - pip install tox
 
 script:
   - tox
+
+after_success:
+  - codecov

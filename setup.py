@@ -2,9 +2,9 @@ import setuptools
 
 import versioneer
 
-#import codecs
-#with codecs.open('DESCRIPTION.rst', 'r', 'utf-8') as f:
-#    long_description = f.read()
+import codecs
+with codecs.open('DESCRIPTION.rst', 'r', 'utf-8') as f:
+    long_description = f.read()
 
 setuptools.setup(
     name = "h5preserve",
@@ -15,8 +15,8 @@ setuptools.setup(
     ],
     author = "James Tocknell",
     author_email = "aragilar@gmail.com",
-    description = "",
-#    long_description = long_description,
+    description = "Thin wrapper around h5py, inspired by camel",
+    long_description = long_description,
     license = "3-clause BSD",
     keywords = "hdf5",
     url = "http://h5preserve.rtfd.org",
