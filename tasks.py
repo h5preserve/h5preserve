@@ -6,19 +6,23 @@ PACKAGE = "h5preserve"
 
 @task
 def make_description(ctx, readme="README.md", description="DESCRIPTION.rst"):
-    print("pandoc {readme} -o {description}".format(readme=readme, description=description))
+    print("Building description")
+    run("pandoc {readme} -o {description}".format(readme=readme, description=description))
 
 @task(make_description)
 def sdist(ctx):
-    print("python setup.py sdist")
+    print("Building sdist")
+    run("python setup.py sdist")
 
 @task(sdist)
 def wheel(ctx, version):
-    print("cm-culture dist/{package}-{version}.tar.gz".format(package=PACKAGE, version=version))
+    print("Building wheel")
+    run("cm-culture dist/{package}-{version}.tar.gz".format(package=PACKAGE, version=version))
 
 @task
 def release(ctx, version):
-    print("git tag {version}".format(version=version))
+    print("Releasing version {version}".format(version=version))
+    run("git tag {version}".format(version=version))
     ctx.invoke_execute(ctx, "sdist")
     ctx.invoke_execute(ctx, "wheel", version=version)
 
