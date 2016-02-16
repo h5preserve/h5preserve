@@ -3,8 +3,12 @@ import setuptools
 import versioneer
 
 import codecs
-with codecs.open('DESCRIPTION.rst', 'r', 'utf-8') as f:
-    long_description = f.read()
+try:
+    with codecs.open('DESCRIPTION.rst', 'r', 'utf-8') as f:
+        long_description = f.read()
+except IOError:
+    print("DESCRIPTION.rst not found")
+    long_description = ""
 
 setuptools.setup(
     name = "h5preserve",
