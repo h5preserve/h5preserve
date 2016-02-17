@@ -21,7 +21,7 @@ env:
   - TOXENV=pylint
   - TOXENV=docs
   - TOXENV=check-manifest
-  - TOXENV=checkreadme
+  #- TOXENV=checkreadme
 matrix:
   include:
     - python: 3.5
