@@ -3,7 +3,8 @@ language: python
 addons:
   apt:
     packages:
-      - libhdf5-serial-dev
+      - libhdf5-serial-dev # for h5py
+      - pandoc # for prerelease
 
 sudo: false
 
@@ -26,7 +27,9 @@ matrix:
       - TOXENV=py35
 
 before_install:
-  - pip install codecov
+  - pip install codecov # for coverage
+  - pip install invoke gitchangelog # for prerelease
+  - invoke prerelease
 
 install:
   - pip install tox

@@ -2,13 +2,16 @@ import setuptools
 
 import versioneer
 
-import codecs
-try:
-    with codecs.open('DESCRIPTION.rst', 'r', 'utf-8') as f:
-        long_description = f.read()
-except IOError:
-    print("DESCRIPTION.rst not found")
-    long_description = ""
+import os
+if not os.environ.get("CHECK_MANIFEST"):
+    import codecs
+    try:
+        with codecs.open('DESCRIPTION.rst', 'r', 'utf-8') as f:
+            long_description = f.read()
+    except IOError:
+        raise RuntimeError("DESCRIPTION.rst not found, run pre-release scripts")
+else:
+    long_description = "check-manifest run, this should not appear"
 
 setuptools.setup(
     name = "h5preserve",
