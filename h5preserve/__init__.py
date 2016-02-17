@@ -11,6 +11,7 @@ from collections import (
 )
 from warnings import warn
 
+from numpy import ndarray
 import h5py
 
 # versioneer stuff
@@ -22,6 +23,15 @@ ALLOWED_DATASET_KEYS = {
     "attrs", "shape", "dtype", "data", "chunks", "maxshape", "fillvalue",
     "size",
 }
+
+EXTERNAL_DUMPED_TYPES = {
+    h5py.Group,
+    h5py.Dataset,
+    h5py.SoftLink,
+    h5py.ExternalLink,
+    ndarray,
+}
+
 H5PRESERVE_ATTR_NAMESPACE = "_h5preserve_namespace"
 H5PRESERVE_ATTR_LABEL = "_h5preserve_label"
 H5PRESERVE_ATTR_VERSION = "_h5preserve_version"
@@ -36,6 +46,7 @@ NOT_LOADABLE = "{} is not something that can be loaded."
 LABEL_NOT_IN_NAMESPACE = "Label {} not in namespace {}."
 NO_SUITABLE_LOADER = "Cannot find suitable loader for label {} with version {}"
 INVALID_DATASET_OPTION = "{} is not a valid dataset option."
+NO_PATH = "No path defined for hard link"
 
 _DumperMap = namedtuple("_DumperMap", "label func")
 
@@ -125,7 +136,7 @@ class RegistryContainer(MutableSequence):
 
     def to_file(self, h5py_group, key, val):
         """
-        Dump native python object to hdf5 file
+        Dump h5preserve object to hdf5 file
 
         Parameters
         ----------
@@ -136,31 +147,38 @@ class RegistryContainer(MutableSequence):
         val
             the object to add
         """
-        h5preserve_repr = self.dump(val)
         # pylint: disable=protected-access
-        if isinstance(h5preserve_repr, GroupContainer):
+        if isinstance(val, GroupContainer):
             new_group = h5py_group.create_group(key)
-            new_group.attrs.update(h5preserve_repr.attrs)
+            new_group.attrs.update(val.attrs)
             new_group.attrs.update({
-                H5PRESERVE_ATTR_NAMESPACE: h5preserve_repr._namespace,
-                H5PRESERVE_ATTR_LABEL: h5preserve_repr._label,
-                H5PRESERVE_ATTR_VERSION: h5preserve_repr._version
+                H5PRESERVE_ATTR_NAMESPACE: val._namespace,
+                H5PRESERVE_ATTR_LABEL: val._label,
+                H5PRESERVE_ATTR_VERSION: val._version
             })
             for obj_name, obj_val in val.items():
                 self.to_file(new_group, obj_name, obj_val)
-        elif isinstance(h5preserve_repr, DatasetContainer):
+        elif isinstance(val, DatasetContainer):
             new_dataset = h5py_group.create_dataset(
-                key, **h5preserve_repr
+                key, **val
             )
-            new_dataset.attrs.update(h5preserve_repr.attrs)
+            new_dataset.attrs.update(val.attrs)
             new_dataset.attrs.update({
-                H5PRESERVE_ATTR_NAMESPACE: h5preserve_repr._namespace,
-                H5PRESERVE_ATTR_LABEL: h5preserve_repr._label,
-                H5PRESERVE_ATTR_VERSION: h5preserve_repr._version
+                H5PRESERVE_ATTR_NAMESPACE: val._namespace,
+                H5PRESERVE_ATTR_LABEL: val._label,
+                H5PRESERVE_ATTR_VERSION: val._version
             })
+        elif isinstance(val, HardLink):
+            if val.h5py_obj is None:
+                val._set_file(h5py_group.file)
+            h5py_group[key] = val.h5py_obj
+        elif isinstance(val, h5py.SoftLink):
+            h5py_group[key] = val
+        elif isinstance(val, h5py.ExternalLink):
+            h5py_group[key] = val
         else:
             raise TypeError(
-                UNKNOWN_H5PRESERVE_TYPE.format(type(h5preserve_repr))
+                UNKNOWN_H5PRESERVE_TYPE.format(type(val))
             )
 
     def dump(self, obj):
@@ -172,6 +190,21 @@ class RegistryContainer(MutableSequence):
         obj
             the object to dump
         """
+        # pylint: disable=unidiomatic-typecheck
+        if isinstance(obj, HardLink):
+            return obj
+        elif type(obj) in EXTERNAL_DUMPED_TYPES:
+            return obj
+        # pylint: enable=unidiomatic-typecheck
+        converted_obj = self._obj_to_h5preserve(obj)
+        for key, val in converted_obj.items():
+            converted_obj[key] = self.dump(val)
+        return converted_obj
+
+    def _obj_to_h5preserve(self, obj):
+        """convert python object to h5preserve representation"""
+        # pylint: disable=no-self-use
+        # pylint: disable=protected-access
         val_type = type(obj)
         for registry in self:
             if val_type in self._registries[registry].dumpers:
@@ -193,14 +226,7 @@ class RegistryContainer(MutableSequence):
             else:
                 version = sorted(dumpers, reverse=True)[0]
             label, dumper = dumpers[version]
-        return self._obj_to_h5preserve(
-            dumper(obj, self), namespace, label, version
-        )
-
-    def _obj_to_h5preserve(self, obj, namespace, label, version):
-        """convert python object to h5preserve representation"""
-        # pylint: disable=no-self-use
-        # pylint: disable=protected-access
+        obj = dumper(obj, self)
         if isinstance(obj, ContainerBase):
             obj._namespace = namespace
             obj._label = label
@@ -430,7 +456,11 @@ class H5PreserveGroup(MutableMapping):
         return self.registries.from_file(self._h5py_group[key])
 
     def __setitem__(self, key, val):
-        self.registries.to_file(self._h5py_group, key, val)
+        self.registries.to_file(
+            self._h5py_group,
+            key,
+            self.registries.dump(val)
+        )
 
     def __delitem__(self, key):
         del self._h5py_group[key]
@@ -528,6 +558,43 @@ class H5PreserveFile(H5PreserveGroup):
         h5py.File: the instance of ``h5py.File`` which ``H5PreserveFile`` wraps
         """
         return self._h5py_file
+
+
+class HardLink(object):
+    # pylint: disable=too-few-public-methods
+    """
+    Represent a h5py hard link to be created via h5preserve.
+
+    Parameters
+    ----------
+    obj : string, h5py.Group or h5py.Dataset
+        the h5py object that the hard link points to, can either be an h5py
+        object, or a string with the absolute path of the object
+    """
+    def __init__(self, obj):
+        if isinstance(obj, str):
+            self._path = obj
+            self._h5py_obj = None
+        else:
+            self._h5py_obj = obj
+            self._path = None
+
+    @property
+    def h5py_obj(self):
+        """
+        h5py.Group or h5py.Dataset: the object which the hard link will point
+        to
+        """
+        return self._h5py_obj
+
+    def _set_file(self, f):
+        """
+        set file associated with the hard link
+        """
+        if self._path is not None:
+            self._h5py_obj = f[self._path]
+        else:
+            raise RuntimeError(NO_PATH)
 
 
 def open(filename, registries, **kwargs):
