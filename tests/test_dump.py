@@ -1,14 +1,9 @@
-
+import pytest
 
 import numpy as np
 from h5py import Group, Dataset
 
-from h5preserve import Registry, RegistryContainer, open as hp_open
-
-### 
-
-REGISTRY = Registry("TestRegistry")
-REGISTRIES = RegistryContainer(REGISTRY)
+from h5preserve import RegistryContainer
 
 def is_matching_hdf5_object(new, old):
     """
@@ -33,41 +28,82 @@ def is_matching_hdf5_object(new, old):
         return True
     return new == old
 
-class ExperimentExample1(object):
-    def __init__(self, data, time_started):
-        self.data = data
-        self.time_started = time_started
+@pytest.mark.xfail
+class TestDump(object):
+    def test_hardlink(self, tmpdir, registry_container):
+        assert 0
+    def test_h5py_group(self, tmpdir, registry_container):
+        assert 0
+    def test_h5py_dataset(self, tmpdir, registry_container):
+        assert 0
+    def test_h5py_soft_link(self, tmpdir, registry_container):
+        assert 0
+    def test_h5py_external_link(self, tmpdir, registry_container):
+        assert 0
+    def test_ndarray(self, tmpdir, registry_container):
+        assert 0
+    def test_recursion(self, tmpdir, registry_container):
+        assert 0
 
-    def __eq__(self, other):
-        return (
-            all(self.data == other.data) and
-            self.time_started == other.time_started
+class TestObjToH5preserve(object):
+    def test_not_dumpable(self, empty_registry, experiment_data):
+        registries = RegistryContainer(empty_registry)
+        with pytest.raises(TypeError) as excinfo:
+            registries._obj_to_h5preserve(experiment_data)
+        assert (
+            "<class 'conftest.Experiment'> is not something that can be dumped." == str(excinfo.value)
         )
 
-@REGISTRY.dumper(ExperimentExample1, "ExperimentExample1", version=1)
-def _exp_dump(experiment, additional_dumpers):
-    return {
-        "data": experiment.data,
-        "attrs": {
-            "time started": experiment.time_started
-        }
-    }
+    def test_no_version(self, expriment_registry, experiment_data):
+        registries = RegistryContainer(expriment_registry)
+        registries.lock_version(type(experiment_data), 10)
+        with pytest.raises(RuntimeError) as excinfo:
+            registries._obj_to_h5preserve(experiment_data)
+        assert (
+            "<class 'conftest.Experiment'> does not have version 10." == str(excinfo.value)
+        )
 
-@REGISTRY.loader("ExperimentExample1", version=1)
-def _exp_load(dataset, additional_loaders):
-    return ExperimentExample1(
-        data=dataset["data"],
-        time_started=dataset["attrs"]["time started"]
-    )
+    @pytest.mark.xfail
+    def test_none(self, tmpdir, registry_container):
+        assert 0
 
-def test_roundtrip(tmpdir):
-    experiment = ExperimentExample1(
-        data=np.random.rand(100),
-        time_started="1970-01-01 00:00:00"
-    )
-    tmpfile = str(tmpdir.join("test_roundtrip.h5"))
-    with hp_open(tmpfile, registries=REGISTRIES) as f:
-        f["first"] = experiment
+    @pytest.mark.xfail
+    def test_any(self, tmpdir, registry_container):
+        assert 0
 
-    with hp_open(tmpfile, registries=REGISTRIES) as f:
-        assert f["first"] == experiment
+    @pytest.mark.xfail
+    def test_all(self, tmpdir, registry_container):
+        assert 0
+
+    @pytest.mark.xfail
+    def test_container_base(self, tmpdir, registry_container):
+        assert 0
+
+    @pytest.mark.xfail
+    def test_mapping(self, tmpdir, registry_container):
+        assert 0
+
+    def test_invalid_dumper(
+        self, invalid_dumper_experiment_registry, experiment_data
+    ):
+        registries = RegistryContainer(invalid_dumper_experiment_registry)
+        with pytest.raises(TypeError) as excinfo:
+            registries._obj_to_h5preserve(experiment_data)
+        assert (
+            "Dumper for Experiment with version 1 returned incorrect type." == str(excinfo.value)
+        )
+
+@pytest.mark.xfail
+class TestToFile(object):
+    def test_hardlink(self, tmpdir, registry_container):
+        assert 0
+    def test_group(self, tmpdir, registry_container):
+        assert 0
+    def test_dataset(self, tmpdir, registry_container):
+        assert 0
+    def test_h5py_soft_link(self, tmpdir, registry_container):
+        assert 0
+    def test_h5py_external_link(self, tmpdir, registry_container):
+        assert 0
+    def test_unknown_type(self, tmpdir, registry_container):
+        assert 0

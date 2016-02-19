@@ -212,7 +212,7 @@ class RegistryContainer(MutableSequence):
                 dumpers = self._registries[registry].dumpers[val_type]
                 break
         else:
-            raise TypeError(NOT_DUMPABLE.format(type(obj)))
+            raise TypeError(NOT_DUMPABLE.format(val_type))
 
         if val_type in self._version_lock:
             version = self._version_lock[val_type]
