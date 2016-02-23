@@ -176,6 +176,8 @@ class RegistryContainer(MutableSequence):
             h5py_group[key] = val
         elif isinstance(val, h5py.ExternalLink):
             h5py_group[key] = val
+        elif isinstance(val, ndarray):
+            h5py_group[key] = val
         else:
             raise TypeError(
                 UNKNOWN_H5PRESERVE_TYPE.format(type(val))
@@ -252,8 +254,28 @@ class RegistryContainer(MutableSequence):
         # pylint: disable=protected-access
         if not isinstance(obj, ContainerBase):
             raise TypeError(NOT_LOADABLE.format(type(obj)))
-        if obj._namespace not in self:
+        elif obj._namespace is None:
+            return obj
+        elif obj._namespace not in self:
             raise RuntimeError(UNKNOWN_NAMESPACE.format(obj._namespace))
+
+        if isinstance(obj, GroupContainer):
+            new_obj = GroupContainer(
+                attrs=obj.attrs,
+                **{key: self.load(item) for key, item in obj.items()}
+            )
+            new_obj._namespace = obj._namespace
+            new_obj._label = obj._label
+            new_obj._version = obj._version
+            obj = new_obj
+
+        return self._get_loader(obj)(obj, self)
+
+    def _get_loader(self, obj):
+        """
+        get the loader for obj
+        """
+        # pylint: disable=protected-access
         loaders = self._registries[obj._namespace].loaders
         if obj._label not in loaders:
             raise RuntimeError(
@@ -261,19 +283,17 @@ class RegistryContainer(MutableSequence):
             )
         loaders = loaders[obj._label]
         if None in loaders:
-            loader = loaders[None]
+            return loaders[None]
         elif all in loaders:
-            loader = loaders[all]
+            return loaders[all]
         elif obj._version in loaders:
-            loader = loaders[obj._version]
-        else:
-            try:
-                loader = loaders[any]
-            except KeyError:
-                raise RuntimeError(
-                    NO_SUITABLE_LOADER.format(obj._label, obj._version)
-                )
-        return loader(obj, self)
+            return loaders[obj._version]
+        try:
+            return loaders[any]
+        except KeyError:
+            raise RuntimeError(
+                NO_SUITABLE_LOADER.format(obj._label, obj._version)
+            )
 
     def lock_version(self, cls, version):
         """
@@ -334,7 +354,7 @@ class GroupContainer(ContainerBase):
 
 class DatasetContainer(ContainerBase):
     """
-    Representation of an hdf5 group for use in h5preserve.
+    Representation of an hdf5 dataset for use in h5preserve.
 
     Parameters
     ----------
