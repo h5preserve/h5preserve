@@ -105,10 +105,9 @@ class RegistryContainer(MutableSequence):
                     "object"
                 )
                 return h5py_obj
-        if namespace in self._registries:
+        elif namespace in self._registries:
             return self.load(self._h5py_to_h5preserve(h5py_obj))
-        else:
-            raise RuntimeError(UNKNOWN_NAMESPACE.format(namespace))
+        raise RuntimeError(UNKNOWN_NAMESPACE.format(namespace))
 
     def _h5py_to_h5preserve(self, h5py_obj):
         """
@@ -147,15 +146,16 @@ class RegistryContainer(MutableSequence):
         val
             the object to add
         """
-        # pylint: disable=protected-access
         if isinstance(val, GroupContainer):
             new_group = h5py_group.create_group(key)
             new_group.attrs.update(val.attrs)
+            # pylint: disable=protected-access
             new_group.attrs.update({
                 H5PRESERVE_ATTR_NAMESPACE: val._namespace,
                 H5PRESERVE_ATTR_LABEL: val._label,
                 H5PRESERVE_ATTR_VERSION: val._version
             })
+            # pylint: enable=protected-access
             for obj_name, obj_val in val.items():
                 self.to_file(new_group, obj_name, obj_val)
         elif isinstance(val, DatasetContainer):
@@ -163,6 +163,7 @@ class RegistryContainer(MutableSequence):
                 key, **val
             )
             new_dataset.attrs.update(val.attrs)
+            # pylint: disable=protected-access
             new_dataset.attrs.update({
                 H5PRESERVE_ATTR_NAMESPACE: val._namespace,
                 H5PRESERVE_ATTR_LABEL: val._label,
@@ -170,6 +171,7 @@ class RegistryContainer(MutableSequence):
             })
         elif isinstance(val, HardLink):
             if val.h5py_obj is None:
+                # pylint: disable=protected-access
                 val._set_file(h5py_group.file)
             h5py_group[key] = val.h5py_obj
         elif isinstance(val, h5py.SoftLink):
@@ -205,10 +207,9 @@ class RegistryContainer(MutableSequence):
 
     def _obj_to_h5preserve(self, obj):
         """convert python object to h5preserve representation"""
-        # pylint: disable=no-self-use
-        # pylint: disable=protected-access
         val_type = type(obj)
         for registry in self:
+            # pylint: disable=protected-access
             if val_type in self._registries[registry].dumpers:
                 namespace = registry
                 dumpers = self._registries[registry].dumpers[val_type]
@@ -216,8 +217,10 @@ class RegistryContainer(MutableSequence):
         else:
             raise TypeError(NOT_DUMPABLE.format(val_type))
 
+        # pylint: disable=protected-access
         if val_type in self._version_lock:
             version = self._version_lock[val_type]
+        # pylint: enable=protected-access
             try:
                 label, dumper = dumpers[version]
             except KeyError:
@@ -230,15 +233,19 @@ class RegistryContainer(MutableSequence):
             label, dumper = dumpers[version]
         obj = dumper(obj)
         if isinstance(obj, ContainerBase):
+            # pylint: disable=protected-access
             obj._namespace = namespace
             obj._label = label
             obj._version = version
+            # pylint: enable=protected-access
             return obj
         elif isinstance(obj, Mapping):
             dataset = DatasetContainer(**obj)
+            # pylint: disable=protected-access
             dataset._namespace = namespace
             dataset._label = label
             dataset._version = version
+            # pylint: enable=protected-access
             return dataset
         raise TypeError(INVALID_DUMPER.format(label, version))
 
@@ -258,15 +265,18 @@ class RegistryContainer(MutableSequence):
             return obj
         elif obj._namespace not in self:
             raise RuntimeError(UNKNOWN_NAMESPACE.format(obj._namespace))
+        # pylint: enable=protected-access
 
         if isinstance(obj, GroupContainer):
             new_obj = GroupContainer(
                 attrs=obj.attrs,
                 **{key: self.load(item) for key, item in obj.items()}
             )
+            # pylint: disable=protected-access
             new_obj._namespace = obj._namespace
             new_obj._label = obj._label
             new_obj._version = obj._version
+            # pylint: enable=protected-access
             obj = new_obj
 
         return self._get_loader(obj)(obj)
