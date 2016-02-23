@@ -75,7 +75,7 @@ def expriment_registry():
     registry = Registry("experiment")
 
     @registry.dumper(Experiment, "Experiment", version=1)
-    def _exp_dump(experiment, additional_dumpers):
+    def _exp_dump(experiment):
         return {
             "data": experiment.data,
             "attrs": {
@@ -84,7 +84,7 @@ def expriment_registry():
         }
 
     @registry.loader("Experiment", version=1)
-    def _exp_load(dataset, additional_loaders):
+    def _exp_load(dataset):
         return Experiment(
             data=dataset["data"],
             time_started=dataset["attrs"]["time started"]
@@ -97,7 +97,7 @@ def invalid_dumper_experiment_registry():
     registry = Registry("incorrect dumper experiment")
 
     @registry.dumper(Experiment, "Experiment", version=1)
-    def _exp_dump(experiment, additional_dumpers):
+    def _exp_dump(experiment):
         return (
             experiment.data, {
                 "time started": experiment.time_started
@@ -111,7 +111,7 @@ def invalid_loader_experiment_registry():
     registry = Registry("incorrect loader experiment")
 
     @registry.dumper(Experiment, "Experiment", version=1)
-    def _exp_dump(experiment, additional_dumpers):
+    def _exp_dump(experiment):
         return {
             "data": experiment.data,
             "attrs": {
@@ -120,7 +120,7 @@ def invalid_loader_experiment_registry():
         }
 
     @registry.loader("Experiment", version=1)
-    def _exp_load(dataset, additional_loaders):
+    def _exp_load(dataset):
         return Experiment(
             data=dataset["data"],
         )
@@ -145,7 +145,7 @@ def solution_registry():
     registry = Registry("solution")
 
     @registry.dumper(InternalData, "InternalData", version=1)
-    def _internal_dump(internal_data, additional_dumpers):
+    def _internal_dump(internal_data):
         return GroupContainer(
             derivs = internal_data.derivs,
             params = internal_data.params,
@@ -159,7 +159,7 @@ def solution_registry():
         )
 
     @registry.loader("InternalData", version=1)
-    def _internal_load(group, additional_loaders):
+    def _internal_load(group):
         return InternalData(
             derivs = group["derivs"]["data"],
             params = group["params"]["data"],
@@ -173,7 +173,7 @@ def solution_registry():
         )
 
     @registry.dumper(InitialConditions, "InitialConditions", version=1)
-    def _initial_dump(initial_conditions, additional_dumpers):
+    def _initial_dump(initial_conditions):
         return GroupContainer(
             attrs={
                 "norm_kepler_sq": initial_conditions.norm_kepler_sq,
@@ -187,7 +187,7 @@ def solution_registry():
         )
 
     @registry.loader("InitialConditions", version=1)
-    def _initial_load(group, additional_loaders):
+    def _initial_load(group):
         return InitialConditions(
             norm_kepler_sq = group.attrs["norm_kepler_sq"],
             c_s = group.attrs["c_s"],
@@ -200,7 +200,7 @@ def solution_registry():
         )
 
     @registry.dumper(Solution, "Solution", version=1)
-    def _solution_dumper(solution, additional_dumpers):
+    def _solution_dumper(solution):
         return GroupContainer(
             attrs={
                 "flag": solution.flag,
@@ -215,7 +215,7 @@ def solution_registry():
         )
 
     @registry.loader("Solution", version=1)
-    def _solution_loader(group, additional_loaders):
+    def _solution_loader(group):
         return Solution(
             flag = group.attrs["flag"],
             coordinate_system = group.attrs["coordinate_system"],

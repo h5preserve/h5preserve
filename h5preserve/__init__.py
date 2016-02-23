@@ -228,7 +228,7 @@ class RegistryContainer(MutableSequence):
             else:
                 version = sorted(dumpers, reverse=True)[0]
             label, dumper = dumpers[version]
-        obj = dumper(obj, self)
+        obj = dumper(obj)
         if isinstance(obj, ContainerBase):
             obj._namespace = namespace
             obj._label = label
@@ -269,7 +269,7 @@ class RegistryContainer(MutableSequence):
             new_obj._version = obj._version
             obj = new_obj
 
-        return self._get_loader(obj)(obj, self)
+        return self._get_loader(obj)(obj)
 
     def _get_loader(self, obj):
         """

@@ -47,7 +47,7 @@ reading and writing become::
 with our dump function being::
 
     @registry.dumper(Experiment, "Experiment", version=1)
-    def _exp_dump(experiment, additional_dumpers):
+    def _exp_dump(experiment):
         return {
             "data": experiment.data,
             "attrs": {
@@ -58,7 +58,7 @@ with our dump function being::
 and our load function being::
 
     @registry.loader("Experiment", version=1)
-    def _exp_load(dataset, additional_loaders):
+    def _exp_load(dataset):
         return Experiment(
             data=dataset["data"],
             time_started=dataset["attrs"]["time started"]
