@@ -99,12 +99,11 @@ class RegistryContainer(MutableSequence):
         if namespace is None:
             if isinstance(h5py_obj, h5py.Group):
                 return H5PreserveGroup(h5py_group=h5py_obj, registries=self)
-            else:
-                warn(
-                    "No type information about object, returning native h5py"
-                    "object"
-                )
-                return h5py_obj
+            warn(
+                "No type information about object, returning native h5py"
+                "object"
+            )
+            return h5py_obj
         elif namespace in self._registries:
             return self.load(self._h5py_to_h5preserve(h5py_obj))
         raise RuntimeError(UNKNOWN_NAMESPACE.format(namespace))
