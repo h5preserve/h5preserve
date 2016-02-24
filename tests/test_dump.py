@@ -1,9 +1,9 @@
 import pytest
 
 import numpy as np
-from h5py import Group, Dataset
+from h5py import Group, Dataset, SoftLink, ExternalLink
 
-from h5preserve import RegistryContainer
+from h5preserve import RegistryContainer, HardLink
 
 def is_matching_hdf5_object(new, old):
     """
@@ -28,20 +28,38 @@ def is_matching_hdf5_object(new, old):
         return True
     return new == old
 
-@pytest.mark.xfail
 class TestDump(object):
-    def test_hardlink(self, tmpdir, registry_container):
-        assert 0
-    def test_h5py_group(self, tmpdir, registry_container):
-        assert 0
-    def test_h5py_dataset(self, tmpdir, registry_container):
-        assert 0
-    def test_h5py_soft_link(self, tmpdir, registry_container):
-        assert 0
-    def test_h5py_external_link(self, tmpdir, registry_container):
-        assert 0
-    def test_ndarray(self, tmpdir, registry_container):
-        assert 0
+    def test_hardlink(self, empty_registry):
+        registries = RegistryContainer(empty_registry)
+        hard_link = HardLink("/example")
+        assert hard_link == registries.dump(hard_link)
+
+    def test_h5py_group(self, empty_registry, h5py_file_with_group):
+        registries = RegistryContainer(empty_registry)
+        group = h5py_file_with_group["example"]
+        assert group == registries.dump(group)
+
+    def test_h5py_dataset(self, empty_registry, h5py_file_with_dataset):
+        registries = RegistryContainer(empty_registry)
+        dataset = h5py_file_with_dataset["example"]
+        assert dataset == registries.dump(dataset)
+
+    def test_h5py_soft_link(self, empty_registry):
+        registries = RegistryContainer(empty_registry)
+        soft_link = SoftLink("/example")
+        assert soft_link == registries.dump(soft_link)
+
+    def test_h5py_external_link(self, empty_registry):
+        registries = RegistryContainer(empty_registry)
+        external_link = ExternalLink("example.hdf5", "/example")
+        assert external_link == registries.dump(external_link)
+
+    def test_ndarray(self, empty_registry):
+        registries = RegistryContainer(empty_registry)
+        ndarray = np.random.rand(1000)
+        assert all(ndarray == registries.dump(ndarray))
+
+    @pytest.mark.xfail
     def test_recursion(self, tmpdir, registry_container):
         assert 0
 
@@ -93,17 +111,27 @@ class TestObjToH5preserve(object):
             "Dumper for Experiment with version 1 returned incorrect type." == str(excinfo.value)
         )
 
-@pytest.mark.xfail
 class TestToFile(object):
+    @pytest.mark.xfail
     def test_hardlink(self, tmpdir, registry_container):
         assert 0
+
+    @pytest.mark.xfail
     def test_group(self, tmpdir, registry_container):
         assert 0
+
+    @pytest.mark.xfail
     def test_dataset(self, tmpdir, registry_container):
         assert 0
+
+    @pytest.mark.xfail
     def test_h5py_soft_link(self, tmpdir, registry_container):
         assert 0
+
+    @pytest.mark.xfail
     def test_h5py_external_link(self, tmpdir, registry_container):
         assert 0
+
+    @pytest.mark.xfail
     def test_unknown_type(self, tmpdir, registry_container):
         assert 0

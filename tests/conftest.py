@@ -4,6 +4,7 @@ import pytest
 from collections import namedtuple
 
 import numpy as np
+from h5py import File
 
 from h5preserve import (
     Registry, RegistryContainer, new_registry_list, GroupContainer,
@@ -294,3 +295,21 @@ def obj_registry_with_defaults(request):
         "registries": new_registry_list(request.param[0]),
         "dumpable_object": request.param[1]
     }
+
+
+@pytest.fixture
+def h5py_file(tmpdir):
+    file = File(str(tmpdir.join("test.hdf5")))
+    def fin():
+        file.close()
+    return file
+
+@pytest.fixture
+def h5py_file_with_group(h5py_file):
+    h5py_file.create_group("example")
+    return h5py_file
+
+@pytest.fixture
+def h5py_file_with_dataset(h5py_file):
+    h5py_file.create_dataset("example", data=np.random.rand(1000))
+    return h5py_file
