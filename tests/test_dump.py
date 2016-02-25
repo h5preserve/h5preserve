@@ -81,6 +81,11 @@ class TestObjToH5preserve(object):
             "<class 'conftest.Experiment'> does not have version 10." == str(excinfo.value)
         )
 
+    def test_version(self, expriment_registry, experiment_data):
+        registries = RegistryContainer(expriment_registry)
+        registries.lock_version(type(experiment_data), 1)
+        assert registries._obj_to_h5preserve(experiment_data)._version == 1
+
     @pytest.mark.xfail
     def test_none(self, tmpdir, registry_container):
         assert 0
