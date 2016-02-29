@@ -556,15 +556,14 @@ class H5PreserveFile(H5PreserveGroup):
 
     Parameters
     ----------
-    filename : string, or other identifier accepted by ``h5py.File``
+    h5py_file : a ``h5py.File``
+        the hdf5 file to wrap
     registries : RegistryContainer
         the collection of registries that you want to use to read from the hdf5
         file
-    **kwargs
-        additional keyword arguments to pass to ``h5py.File``
     """
-    def __init__(self, filename, registries, **kwargs):
-        self._h5py_file = h5py.File(filename, **kwargs)
+    def __init__(self, h5py_file, registries):
+        self._h5py_file = h5py_file
         super(H5PreserveFile, self).__init__(
             h5py_group=self._h5py_file["/"],
             registries=registries
@@ -639,7 +638,7 @@ def open(filename, registries, **kwargs):
     **kwargs
         additional keyword arguments to pass to ``h5py.File``
     """
-    return H5PreserveFile(filename, registries, **kwargs)
+    return H5PreserveFile(h5py.File(filename, **kwargs), registries)
 
 
 def new_registry_list(*registries):
