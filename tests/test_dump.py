@@ -135,5 +135,9 @@ class TestToFile(object):
         assert h5py_file_with_group.get("alias", getlink=True).filename == "external.hdf5"
 
     @pytest.mark.xfail
-    def test_unknown_type(self, tmpdir, registry_container):
-        assert 0
+    def test_unknown_type(self):
+        with pytest.raises(TypeError) as excinfo:
+            registries.to_file("fail")
+        assert (
+            "Unknown h5preserve type str." == str(excinfo.value)
+        )
