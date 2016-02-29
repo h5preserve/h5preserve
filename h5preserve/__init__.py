@@ -292,7 +292,7 @@ class RegistryContainer(MutableSequence):
                 LABEL_NOT_IN_NAMESPACE.format(obj._label, obj._namespace)
             )
         loaders = loaders[obj._label]
-        if None in loaders:
+        if obj._version is None and None in loaders:
             return loaders[None]
         elif all in loaders:
             return loaders[all]
