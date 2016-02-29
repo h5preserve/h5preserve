@@ -145,29 +145,8 @@ class RegistryContainer(MutableSequence):
         val
             the object to add
         """
-        if isinstance(val, GroupContainer):
-            new_group = h5py_group.create_group(key)
-            new_group.attrs.update(val.attrs)
-            # pylint: disable=protected-access
-            new_group.attrs.update({
-                H5PRESERVE_ATTR_NAMESPACE: val._namespace,
-                H5PRESERVE_ATTR_LABEL: val._label,
-                H5PRESERVE_ATTR_VERSION: val._version
-            })
-            # pylint: enable=protected-access
-            for obj_name, obj_val in val.items():
-                self.to_file(new_group, obj_name, obj_val)
-        elif isinstance(val, DatasetContainer):
-            new_dataset = h5py_group.create_dataset(
-                key, **val
-            )
-            new_dataset.attrs.update(val.attrs)
-            # pylint: disable=protected-access
-            new_dataset.attrs.update({
-                H5PRESERVE_ATTR_NAMESPACE: val._namespace,
-                H5PRESERVE_ATTR_LABEL: val._label,
-                H5PRESERVE_ATTR_VERSION: val._version
-            })
+        if isinstance(val, ContainerBase):
+            self._write_containers_to_file(h5py_group, key, val)
         elif isinstance(val, HardLink):
             if val.h5py_obj is None:
                 # pylint: disable=protected-access
@@ -183,6 +162,28 @@ class RegistryContainer(MutableSequence):
             raise TypeError(
                 UNKNOWN_H5PRESERVE_TYPE.format(type(val))
             )
+
+    def _write_containers_to_file(self, h5py_group, key, val):
+        """
+        Write instances of ContainerBase to an hdf5 file
+        """
+        if isinstance(val, GroupContainer):
+            new_obj = h5py_group.create_group(key)
+            new_obj.attrs.update(val.attrs)
+            for obj_name, obj_val in val.items():
+                self.to_file(new_obj, obj_name, obj_val)
+        elif isinstance(val, DatasetContainer):
+            new_obj = h5py_group.create_dataset(
+                key, **val
+            )
+            new_obj.attrs.update(val.attrs)
+        # pylint: disable=protected-access
+        new_obj.attrs[H5PRESERVE_ATTR_LABEL] = val._label
+        if val._namespace is not None:
+            new_obj.attrs[H5PRESERVE_ATTR_NAMESPACE] = val._namespace
+        if val._version is not None:
+            new_obj.attrs[H5PRESERVE_ATTR_VERSION] = val._version
+        # pylint: enable=protected-access
 
     def dump(self, obj):
         """
@@ -438,7 +439,7 @@ class Registry(object):
             the class which this dumper operates on
         label : string
             the label or tag associated with this class
-        version : integer, any, all, None
+        version : integer, None
             The version of the output that this function returns.
         """
         def add_dumper(new_dumper):

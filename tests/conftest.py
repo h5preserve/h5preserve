@@ -129,6 +129,28 @@ def invalid_loader_experiment_registry():
     return registry
 
 @pytest.fixture
+def None_version_expriment_registry():
+    registry = Registry("None experiment")
+
+    @registry.dumper(Experiment, "Experiment", version=None)
+    def _exp_dump(experiment):
+        return {
+            "data": experiment.data,
+            "attrs": {
+                "time started": experiment.time_started
+            }
+        }
+
+    @registry.loader("Experiment", version=None)
+    def _exp_load(dataset):
+        return Experiment(
+            data=dataset["data"],
+            time_started=dataset["attrs"]["time started"]
+        )
+
+    return registry
+
+@pytest.fixture
 def frozen_expriment_registry():
     registry = expriment_registry()
     registry.freeze()
@@ -273,6 +295,7 @@ def solution_data():
 @pytest.fixture(params=[
     (expriment_registry(), experiment_data()),
     (frozen_expriment_registry(), experiment_data()),
+    (None_version_expriment_registry(), experiment_data()),
     (solution_registry(), internal_data_data()),
     (solution_registry(), initial_conditions_data()),
     (solution_registry(), solution_data()),
@@ -286,6 +309,7 @@ def obj_registry(request):
 @pytest.fixture(params=[
     (expriment_registry(), experiment_data()),
     (frozen_expriment_registry(), experiment_data()),
+    (None_version_expriment_registry(), experiment_data()),
     (solution_registry(), internal_data_data()),
     (solution_registry(), initial_conditions_data()),
     (solution_registry(), solution_data()),

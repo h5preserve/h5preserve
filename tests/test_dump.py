@@ -86,17 +86,9 @@ class TestObjToH5preserve(object):
         registries.lock_version(type(experiment_data), 1)
         assert registries._obj_to_h5preserve(experiment_data)._version == 1
 
-    @pytest.mark.xfail
-    def test_none(self, tmpdir, registry_container):
-        assert 0
-
-    @pytest.mark.xfail
-    def test_any(self, tmpdir, registry_container):
-        assert 0
-
-    @pytest.mark.xfail
-    def test_all(self, tmpdir, registry_container):
-        assert 0
+    def test_none(self, None_version_expriment_registry, experiment_data):
+        registries = RegistryContainer(None_version_expriment_registry)
+        assert registries._obj_to_h5preserve(experiment_data)._version == None
 
     @pytest.mark.xfail
     def test_container_base(self, tmpdir, registry_container):
