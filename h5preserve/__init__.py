@@ -89,7 +89,7 @@ class RegistryContainer(MutableSequence):
 
     def from_file(self, h5py_obj):
         """
-        Return native python object from hdf5 file
+        Return an representation of a hdf5 object from a hdf5 file
 
         Parameters
         ----------
@@ -105,7 +105,7 @@ class RegistryContainer(MutableSequence):
             )
             return h5py_obj
         elif namespace in self._registries:
-            return self.load(self._h5py_to_h5preserve(h5py_obj))
+            return self._h5py_to_h5preserve(h5py_obj)
         raise RuntimeError(UNKNOWN_NAMESPACE.format(namespace))
 
     def _h5py_to_h5preserve(self, h5py_obj):
@@ -482,7 +482,9 @@ class H5PreserveGroup(MutableMapping):
         self.registries = registries
 
     def __getitem__(self, key):
-        return self.registries.from_file(self._h5py_group[key])
+        return self.registries.load(
+            self.registries.from_file(self._h5py_group[key])
+        )
 
     def __setitem__(self, key, val):
         self.registries.to_file(
