@@ -46,7 +46,7 @@ NOT_LOADABLE = "{} is not something that can be loaded."
 LABEL_NOT_IN_NAMESPACE = "Label {} not in namespace {}."
 NO_SUITABLE_LOADER = "Cannot find suitable loader for label {} with version {}"
 INVALID_DATASET_OPTION = "{} is not a valid dataset option."
-NO_PATH = "No path defined for hard link"
+NO_PATH = "No path defined for hard link."
 
 _DumperMap = namedtuple("_DumperMap", "label func")
 
