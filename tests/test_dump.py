@@ -3,7 +3,7 @@ import pytest
 import numpy as np
 from h5py import Group, Dataset, SoftLink, ExternalLink
 
-from h5preserve import RegistryContainer, HardLink
+from h5preserve import RegistryContainer, HardLink, new_registry_list
 
 def is_matching_hdf5_object(new, old):
     """
@@ -121,13 +121,18 @@ class TestToFile(object):
     def test_dataset(self, tmpdir, registry_container):
         assert 0
 
-    @pytest.mark.xfail
-    def test_h5py_soft_link(self, tmpdir, registry_container):
-        assert 0
+    def test_h5py_soft_link(self, h5py_file_with_group):
+        soft_link = SoftLink("example")
+        registries = new_registry_list()
+        registries.to_file(h5py_file_with_group, "alias", soft_link)
+        assert h5py_file_with_group.get("alias", getlink=True).path == "example"
 
-    @pytest.mark.xfail
-    def test_h5py_external_link(self, tmpdir, registry_container):
-        assert 0
+    def test_h5py_external_link(self, h5py_file_with_group):
+        external = ExternalLink("external.hdf5", "example")
+        registries = new_registry_list()
+        registries.to_file(h5py_file_with_group, "alias", external)
+        assert h5py_file_with_group.get("alias", getlink=True).path == "example"
+        assert h5py_file_with_group.get("alias", getlink=True).filename == "external.hdf5"
 
     @pytest.mark.xfail
     def test_unknown_type(self, tmpdir, registry_container):
