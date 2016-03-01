@@ -5,5 +5,3 @@ _build
 .coverage
 dist
 build
-DESCRIPTION.rst
-CHANGELOG.rst

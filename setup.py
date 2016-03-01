@@ -2,16 +2,15 @@ import setuptools
 
 import versioneer
 
-import os
-if not os.environ.get("CHECK_MANIFEST"):
-    import codecs
-    try:
-        with codecs.open('DESCRIPTION.rst', 'r', 'utf-8') as f:
-            long_description = f.read()
-    except IOError:
-        raise RuntimeError("DESCRIPTION.rst not found, run pre-release scripts")
-else:
-    long_description = "check-manifest run, this should not appear"
+DESCRIPTION_FILES = ["pypi-intro.rst"]
+
+long_description = []
+import codecs
+for filename in DESCRIPTION_FILES:
+    with codecs.open(filename, 'r', 'utf-8') as f:
+        long_description.append(f.read())
+long_description = "\n".join(long_description)
+
 
 setuptools.setup(
     name = "h5preserve",

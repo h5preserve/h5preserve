@@ -7,7 +7,7 @@ DESCRIPTION = "DESCRIPTION.rst"
 CHANGELOG = "CHANGELOG.rst"
 DESCRIPTION_FILES = [
     "pypi-intro.rst",
-    CHANGELOG,
+    #CHANGELOG,
 ]
 
 @task
@@ -27,7 +27,7 @@ def make_description(ctx):
 
 @task
 def prerelease(ctx):
-    ctx.invoke_execute(ctx, "make_changelog")
+    #ctx.invoke_execute(ctx, "make_changelog")
     ctx.invoke_execute(ctx, "make_description")
 
 @task(prerelease)
