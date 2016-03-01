@@ -72,8 +72,8 @@ class TestObjToH5preserve(object):
             "<class 'conftest.Experiment'> is not something that can be dumped." == str(excinfo.value)
         )
 
-    def test_no_version(self, expriment_registry, experiment_data):
-        registries = RegistryContainer(expriment_registry)
+    def test_no_version(self, experiment_registry, experiment_data):
+        registries = RegistryContainer(experiment_registry)
         registries.lock_version(type(experiment_data), 10)
         with pytest.raises(RuntimeError) as excinfo:
             registries._obj_to_h5preserve(experiment_data)
@@ -81,13 +81,13 @@ class TestObjToH5preserve(object):
             "<class 'conftest.Experiment'> does not have version 10." == str(excinfo.value)
         )
 
-    def test_version(self, expriment_registry, experiment_data):
-        registries = RegistryContainer(expriment_registry)
+    def test_version(self, experiment_registry, experiment_data):
+        registries = RegistryContainer(experiment_registry)
         registries.lock_version(type(experiment_data), 1)
         assert registries._obj_to_h5preserve(experiment_data)._version == 1
 
-    def test_none(self, None_version_expriment_registry, experiment_data):
-        registries = RegistryContainer(None_version_expriment_registry)
+    def test_none(self, None_version_experiment_registry, experiment_data):
+        registries = RegistryContainer(None_version_experiment_registry)
         assert registries._obj_to_h5preserve(experiment_data)._version == None
 
     @pytest.mark.xfail

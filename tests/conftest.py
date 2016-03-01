@@ -72,7 +72,7 @@ def frozen_empty_registry():
     return registry
 
 @pytest.fixture
-def expriment_registry():
+def experiment_registry():
     registry = Registry("experiment")
 
     @registry.dumper(Experiment, "Experiment", version=1)
@@ -129,7 +129,7 @@ def invalid_loader_experiment_registry():
     return registry
 
 @pytest.fixture
-def None_version_expriment_registry():
+def None_version_experiment_registry():
     registry = Registry("None experiment")
 
     @registry.dumper(Experiment, "Experiment", version=None)
@@ -151,8 +151,23 @@ def None_version_expriment_registry():
     return registry
 
 @pytest.fixture
-def frozen_expriment_registry():
-    registry = expriment_registry()
+def no_loader_experiment_registry():
+    registry = Registry("experiment")
+
+    @registry.dumper(Experiment, "Experiment", version=1)
+    def _exp_dump(experiment):
+        return {
+            "data": experiment.data,
+            "attrs": {
+                "time started": experiment.time_started
+            }
+        }
+
+    return registry
+
+@pytest.fixture
+def frozen_experiment_registry():
+    registry = experiment_registry()
     registry.freeze()
     return registry
 
@@ -293,9 +308,9 @@ def solution_data():
     )
 
 @pytest.fixture(params=[
-    (expriment_registry(), experiment_data()),
-    (frozen_expriment_registry(), experiment_data()),
-    (None_version_expriment_registry(), experiment_data()),
+    (experiment_registry(), experiment_data()),
+    (frozen_experiment_registry(), experiment_data()),
+    (None_version_experiment_registry(), experiment_data()),
     (solution_registry(), internal_data_data()),
     (solution_registry(), initial_conditions_data()),
     (solution_registry(), solution_data()),
@@ -307,9 +322,9 @@ def obj_registry(request):
     }
 
 @pytest.fixture(params=[
-    (expriment_registry(), experiment_data()),
-    (frozen_expriment_registry(), experiment_data()),
-    (None_version_expriment_registry(), experiment_data()),
+    (experiment_registry(), experiment_data()),
+    (frozen_experiment_registry(), experiment_data()),
+    (None_version_experiment_registry(), experiment_data()),
     (solution_registry(), internal_data_data()),
     (solution_registry(), initial_conditions_data()),
     (solution_registry(), solution_data()),
@@ -337,3 +352,21 @@ def h5py_file_with_group(h5py_file):
 def h5py_file_with_dataset(h5py_file):
     h5py_file.create_dataset("example", data=np.random.rand(1000))
     return h5py_file
+
+@pytest.fixture
+def h5py_file_with_experiment(h5py_file):
+    h5py_file.create_dataset("example", data=np.random.rand(1000))
+    h5py_file["example"].attrs.update()
+    return h5py_file
+
+@pytest.fixture
+def h5preserve_experiment_repr():
+    return DatasetContainer(
+        attrs={
+            "time started": "2000-01-01",
+            "_h5preserve_namespace": "experiment",
+            "_h5preserve_label": "Experiment",
+            "_h5preserve_version": 1,
+        },
+        data=np.random.rand(1000)
+    )
