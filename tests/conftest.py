@@ -77,12 +77,12 @@ def experiment_registry():
 
     @registry.dumper(Experiment, "Experiment", version=1)
     def _exp_dump(experiment):
-        return {
-            "data": experiment.data,
-            "attrs": {
+        return DatasetContainer(
+            data = experiment.data,
+            attrs = {
                 "time started": experiment.time_started
             }
-        }
+        )
 
     @registry.loader("Experiment", version=1)
     def _exp_load(dataset):
@@ -113,12 +113,12 @@ def invalid_loader_experiment_registry():
 
     @registry.dumper(Experiment, "Experiment", version=1)
     def _exp_dump(experiment):
-        return {
-            "data": experiment.data,
-            "attrs": {
+        return DatasetContainer(
+            data = experiment.data,
+            attrs = {
                 "time started": experiment.time_started
             }
-        }
+        )
 
     @registry.loader("Experiment", version=1)
     def _exp_load(dataset):
@@ -134,12 +134,12 @@ def None_version_experiment_registry():
 
     @registry.dumper(Experiment, "Experiment", version=None)
     def _exp_dump(experiment):
-        return {
-            "data": experiment.data,
-            "attrs": {
+        return DatasetContainer(
+            data = experiment.data,
+            attrs = {
                 "time started": experiment.time_started
             }
-        }
+        )
 
     @registry.loader("Experiment", version=None)
     def _exp_load(dataset):
@@ -156,12 +156,12 @@ def no_loader_experiment_registry():
 
     @registry.dumper(Experiment, "Experiment", version=1)
     def _exp_dump(experiment):
-        return {
-            "data": experiment.data,
-            "attrs": {
+        return DatasetContainer(
+            data = experiment.data,
+            attrs = {
                 "time started": experiment.time_started
             }
-        }
+        )
 
     return registry
 

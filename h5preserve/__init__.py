@@ -7,7 +7,7 @@ native python types.
 :license: 3-clause BSD
 """
 from collections import (
-    MutableMapping, namedtuple, defaultdict, MutableSequence, Mapping
+    MutableMapping, namedtuple, defaultdict, MutableSequence,
 )
 from warnings import warn
 
@@ -239,14 +239,6 @@ class RegistryContainer(MutableSequence):
             obj._version = version
             # pylint: enable=protected-access
             return obj
-        elif isinstance(obj, Mapping):
-            dataset = DatasetContainer(**obj)
-            # pylint: disable=protected-access
-            dataset._namespace = namespace
-            dataset._label = label
-            dataset._version = version
-            # pylint: enable=protected-access
-            return dataset
         raise TypeError(INVALID_DUMPER.format(label, version))
 
     def load(self, obj):
@@ -646,11 +638,14 @@ def open(filename, registries, **kwargs):
 
 def new_registry_list(*registries):
     """
-    Create a new list of registries which includes builtin registries
+    Create a new list of registries which includes builtin registries.
 
     Parameters
     ----------
     *registries : list of Registry
         the list of registries to be associated with this container
     """
-    return RegistryContainer(*registries)
+    from .additional_registries import none_python_registry
+    return RegistryContainer(
+        none_python_registry, *registries
+    )
