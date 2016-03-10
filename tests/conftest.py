@@ -10,6 +10,9 @@ from h5preserve import (
     Registry, RegistryContainer, new_registry_list, GroupContainer,
     DatasetContainer
 )
+from h5preserve.additional_registries import (
+    none_python_registry, dict_as_group_registry
+)
 
 ### Classes for testng ###
 class Experiment(object):
@@ -307,6 +310,19 @@ def solution_data():
         initial_conditions = initial_conditions_data(),
     )
 
+@pytest.fixture
+def dict_without_attrs():
+    return {
+        "abc": {}
+    }
+
+@pytest.fixture
+def dict_with_attrs():
+    return {
+        "abc": {},
+        "attrs": {"a": 2}
+    }
+
 @pytest.fixture(params=[
     (experiment_registry(), experiment_data()),
     (frozen_experiment_registry(), experiment_data()),
@@ -314,6 +330,9 @@ def solution_data():
     (solution_registry(), internal_data_data()),
     (solution_registry(), initial_conditions_data()),
     (solution_registry(), solution_data()),
+    (none_python_registry, None),
+    (dict_as_group_registry, dict_with_attrs()),
+    (dict_as_group_registry, dict_without_attrs()),
 ])
 def obj_registry(request):
     return {
@@ -328,6 +347,12 @@ def obj_registry(request):
     (solution_registry(), internal_data_data()),
     (solution_registry(), initial_conditions_data()),
     (solution_registry(), solution_data()),
+    (none_python_registry, None),
+    (frozen_empty_registry(), None),
+    (dict_as_group_registry, dict_with_attrs()),
+    (dict_as_group_registry, dict_without_attrs()),
+    (frozen_empty_registry(), dict_with_attrs()),
+    (frozen_empty_registry(), dict_without_attrs()),
 ])
 def obj_registry_with_defaults(request):
     return {

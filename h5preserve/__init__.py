@@ -201,8 +201,9 @@ class RegistryContainer(MutableSequence):
             return obj
         # pylint: enable=unidiomatic-typecheck
         converted_obj = self._obj_to_h5preserve(obj)
-        for key, val in converted_obj.items():
-            converted_obj[key] = self.dump(val)
+        if isinstance(converted_obj, tuple(RECURSIVE_DUMPING_TYPES)):
+            for key, val in converted_obj.items():
+                converted_obj[key] = self.dump(val)
         return converted_obj
 
     def _obj_to_h5preserve(self, obj):
@@ -353,6 +354,16 @@ class GroupContainer(ContainerBase):
     def __len__(self):
         return len(self._group_members)
 
+    def __repr__(self):
+        return "GroupContainer(attrs={attrs!r}, {group_items})".format(
+            attrs=self.attrs,
+            group_items=", ".join(
+                "{key!r}={val!r}".format(key=key, val=val)
+                for key, val in self._group_members.items()
+                if val is not None
+            )
+        )
+
 
 class DatasetContainer(ContainerBase):
     """
@@ -389,6 +400,16 @@ class DatasetContainer(ContainerBase):
 
     def __len__(self):
         return len(self._dataset_members)
+
+    def __repr__(self):
+        return "DatasetContainer(attrs={attrs!r}, {dataset})".format(
+            attrs=self.attrs,
+            dataset=", ".join(
+                "{key!r}={val!r}".format(key=key, val=val)
+                for key, val in self._dataset_members.items()
+                if val is not None
+            )
+        )
 
 
 class Registry(object):
@@ -610,6 +631,13 @@ class HardLink(object):
         """
         return self._h5py_obj
 
+    @property
+    def path(self):
+        """
+        The path this object points to
+        """
+        return self._path
+
     def _set_file(self, f):
         """
         set file associated with the hard link
@@ -618,6 +646,12 @@ class HardLink(object):
             self._h5py_obj = f[self._path]
         else:
             raise RuntimeError(NO_PATH)
+
+    def __repr__(self):
+        if self._path is not None:
+            return "HardLink(path={path})".format(path=self.path)
+        else:
+            return "HardLink(h5py_obj={obj})".format(obj=self.h5py_obj)
 
 
 def open(filename, registries, **kwargs):
@@ -651,3 +685,7 @@ def new_registry_list(*registries):
     return RegistryContainer(
         none_python_registry, dict_as_group_registry, *registries
     )
+
+RECURSIVE_DUMPING_TYPES = {
+    GroupContainer
+}
