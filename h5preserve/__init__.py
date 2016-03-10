@@ -11,6 +11,8 @@ from collections import (
 )
 from warnings import warn
 
+import six
+
 from numpy import ndarray
 import h5py
 
@@ -32,6 +34,16 @@ EXTERNAL_DUMPED_TYPES = {
     ndarray,
 }
 
+H5PY_ATTR_WRITABLE_TYPES = {
+    int,
+    float,
+    list,
+    tuple,
+    ndarray,
+}
+H5PY_ATTR_WRITABLE_TYPES.add(six.text_type)
+H5PY_ATTR_WRITABLE_TYPES.add(six.binary_type)
+
 H5PRESERVE_ATTR_NAMESPACE = "_h5preserve_namespace"
 H5PRESERVE_ATTR_LABEL = "_h5preserve_label"
 H5PRESERVE_ATTR_VERSION = "_h5preserve_version"
@@ -47,6 +59,7 @@ LABEL_NOT_IN_NAMESPACE = "Label {} not in namespace {}."
 NO_SUITABLE_LOADER = "Cannot find suitable loader for label {} with version {}"
 INVALID_DATASET_OPTION = "{} is not a valid dataset option."
 NO_PATH = "No path defined for hard link."
+ATTR_NOT_DUMPED = "Attribute {}={} has not been dumped."
 
 _DumperMap = namedtuple("_DumperMap", "label func")
 
@@ -167,6 +180,9 @@ class RegistryContainer(MutableSequence):
         """
         Write instances of ContainerBase to an hdf5 file
         """
+        for item_name, item in val.attrs.items():
+            if not isinstance(item, tuple(H5PY_ATTR_WRITABLE_TYPES)):
+                raise TypeError(ATTR_NOT_DUMPED.format(item_name, item))
         if isinstance(val, GroupContainer):
             new_obj = h5py_group.create_group(key)
             new_obj.attrs.update(val.attrs)
