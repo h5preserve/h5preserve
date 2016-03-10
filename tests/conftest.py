@@ -4,6 +4,7 @@ import pytest
 from collections import namedtuple
 
 import numpy as np
+import h5py
 from h5py import File
 
 from h5preserve import (
@@ -330,7 +331,6 @@ def dict_with_attrs():
     (solution_registry(), internal_data_data()),
     (solution_registry(), initial_conditions_data()),
     (solution_registry(), solution_data()),
-    (none_python_registry, None),
     (dict_as_group_registry, dict_with_attrs()),
     (dict_as_group_registry, dict_without_attrs()),
 ])
@@ -347,8 +347,6 @@ def obj_registry(request):
     (solution_registry(), internal_data_data()),
     (solution_registry(), initial_conditions_data()),
     (solution_registry(), solution_data()),
-    (none_python_registry, None),
-    (frozen_empty_registry(), None),
     (dict_as_group_registry, dict_with_attrs()),
     (dict_as_group_registry, dict_without_attrs()),
     (frozen_empty_registry(), dict_with_attrs()),
@@ -360,6 +358,26 @@ def obj_registry_with_defaults(request):
         "dumpable_object": request.param[1]
     }
 
+if hasattr(h5py, "Empty"):
+
+    @pytest.fixture(params=[
+        (none_python_registry, None),
+    ])
+    def obj_registry_with_none(request):
+        return {
+            "registries": RegistryContainer(request.param[0]),
+            "dumpable_object": request.param[1]
+        }
+
+    @pytest.fixture(params=[
+        (none_python_registry, None),
+        (frozen_empty_registry(), None),
+    ])
+    def obj_registry_with_none_with_defaults(request):
+        return {
+            "registries": new_registry_list(request.param[0]),
+            "dumpable_object": request.param[1]
+        }
 
 @pytest.fixture
 def h5py_file(tmpdir):
