@@ -3,6 +3,8 @@ import pytest
 
 from collections import namedtuple
 
+import six
+
 import numpy as np
 import h5py
 from h5py import File
@@ -12,7 +14,8 @@ from h5preserve import (
     DatasetContainer
 )
 from h5preserve.additional_registries import (
-    none_python_registry, dict_as_group_registry
+    none_python_registry, dict_as_group_registry, builtin_numbers_registry,
+    builtin_text_registry
 )
 
 ### Classes for testng ###
@@ -333,6 +336,10 @@ def dict_with_attrs():
     (solution_registry(), solution_data()),
     (dict_as_group_registry, dict_with_attrs()),
     (dict_as_group_registry, dict_without_attrs()),
+    (builtin_numbers_registry, 1),
+    (builtin_numbers_registry, 1.0),
+    (builtin_text_registry, b"abcd"),
+    (builtin_text_registry, u"abcd"),
 ])
 def obj_registry(request):
     return {
@@ -351,6 +358,14 @@ def obj_registry(request):
     (dict_as_group_registry, dict_without_attrs()),
     (frozen_empty_registry(), dict_with_attrs()),
     (frozen_empty_registry(), dict_without_attrs()),
+    (builtin_numbers_registry, 1),
+    (builtin_numbers_registry, 1.0),
+    (frozen_empty_registry(), 1),
+    (frozen_empty_registry(), 1.0),
+    (builtin_text_registry, b"abcd"),
+    (builtin_text_registry, u"abcd"),
+    (frozen_empty_registry(), b"abcd"),
+    (frozen_empty_registry(), u"abcd"),
 ])
 def obj_registry_with_defaults(request):
     return {
