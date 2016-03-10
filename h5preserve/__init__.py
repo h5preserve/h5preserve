@@ -645,7 +645,9 @@ def new_registry_list(*registries):
     *registries : list of Registry
         the list of registries to be associated with this container
     """
-    from .additional_registries import none_python_registry
+    from .additional_registries import (
+        none_python_registry, dict_as_group_registry
+    )
     return RegistryContainer(
-        none_python_registry, *registries
+        none_python_registry, dict_as_group_registry, *registries
     )
