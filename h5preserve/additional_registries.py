@@ -4,6 +4,7 @@ Additional registries for h5preserve
 """
 import six
 
+from numpy import asarray
 import h5py
 
 from . import Registry, GroupContainer, DatasetContainer
@@ -23,6 +24,7 @@ none_python_registry = Registry("Python: None")
 dict_as_group_registry = Registry("Python: dict as group")
 builtin_numbers_registry = Registry("Python: builtin numbers")
 builtin_text_registry = Registry("Python: builtin text")
+sequence_as_dataset_registry = Registry("Python: sequence as dataset")
 
 if hasattr(h5py, "Empty"):
     # pylint: disable=missing-docstring,unused-argument,no-member
@@ -74,7 +76,33 @@ else:
 builtin_text_registry.loader("ascii", version=None)(as_dataset_loader)
 builtin_text_registry.loader("text", version=None)(as_dataset_loader)
 
+
+@sequence_as_dataset_registry.dumper(list, "list", version=None)
+def _list_dumper(l):
+    # pylint: disable=missing-docstring
+    return DatasetContainer(data=asarray(l))
+
+
+@sequence_as_dataset_registry.loader("list", version=None)
+def _list_loader(dataset):
+    # pylint: disable=missing-docstring
+    return list(dataset)
+
+
+@sequence_as_dataset_registry.dumper(tuple, "tuple", version=None)
+def _tuple_dumper(t):
+    # pylint: disable=missing-docstring
+    return DatasetContainer(data=asarray(t))
+
+
+@sequence_as_dataset_registry.loader("tuple", version=None)
+def _tuple_loader(dataset):
+    # pylint: disable=missing-docstring
+    return tuple(dataset)
+
+
 none_python_registry.freeze()
 dict_as_group_registry.freeze()
 builtin_numbers_registry.freeze()
 builtin_text_registry.freeze()
+sequence_as_dataset_registry.freeze()
