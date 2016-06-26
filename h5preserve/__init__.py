@@ -23,7 +23,8 @@ del get_versions
 
 ALLOWED_DATASET_KEYS = {
     "attrs", "shape", "dtype", "data", "chunks", "maxshape", "fillvalue",
-    "size",
+    "size", "compression", "compression_opts", "scaleoffset", "shuffle",
+    "fletcher32", "fillvalue", "track_times",
 }
 
 EXTERNAL_DUMPED_TYPES = {
