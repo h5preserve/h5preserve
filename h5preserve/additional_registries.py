@@ -7,7 +7,7 @@ import six
 from numpy import asarray
 import h5py
 
-from . import Registry, GroupContainer, DatasetContainer
+from . import Registry, DatasetContainer
 
 
 def as_dataset_dumper(obj):
@@ -21,7 +21,6 @@ def as_dataset_loader(dataset):
 
 
 none_python_registry = Registry("Python: None")
-dict_as_group_registry = Registry("Python: dict as group")
 builtin_numbers_registry = Registry("Python: builtin numbers")
 builtin_text_registry = Registry("Python: builtin text")
 sequence_as_dataset_registry = Registry("Python: sequence as dataset")
@@ -35,22 +34,6 @@ if hasattr(h5py, "Empty"):
     @none_python_registry.loader("None", version=None)
     def _none_loader(empty):
         return None
-
-
-@dict_as_group_registry.dumper(dict, "dict", version=None)
-def _dict_dumper(d):
-    # pylint: disable=missing-docstring
-    return GroupContainer(**d)
-
-
-@dict_as_group_registry.loader("dict", version=None)
-def _dict_loader(group):
-    # pylint: disable=missing-docstring
-    new_dict = {}
-    new_dict.update(group)
-    if group.attrs:
-        new_dict["attrs"] = group.attrs
-    return new_dict
 
 builtin_numbers_registry.dumper(int, "int", version=None)(as_dataset_dumper)
 builtin_numbers_registry.loader("int", version=None)(as_dataset_loader)
@@ -102,7 +85,6 @@ def _tuple_loader(dataset):
 
 
 none_python_registry.freeze()
-dict_as_group_registry.freeze()
 builtin_numbers_registry.freeze()
 builtin_text_registry.freeze()
 sequence_as_dataset_registry.freeze()

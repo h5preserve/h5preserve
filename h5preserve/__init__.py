@@ -700,12 +700,11 @@ def new_registry_list(*registries):
         the list of registries to be associated with this container
     """
     from .additional_registries import (
-        none_python_registry, dict_as_group_registry, builtin_numbers_registry,
+        none_python_registry, builtin_numbers_registry,
         builtin_text_registry, sequence_as_dataset_registry,
     )
     return RegistryContainer(
         none_python_registry,
-        dict_as_group_registry,
         builtin_numbers_registry,
         builtin_text_registry,
         sequence_as_dataset_registry,

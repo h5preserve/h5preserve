@@ -14,7 +14,7 @@ from h5preserve import (
     DatasetContainer
 )
 from h5preserve.additional_registries import (
-    none_python_registry, dict_as_group_registry, builtin_numbers_registry,
+    none_python_registry, builtin_numbers_registry,
     builtin_text_registry
 )
 
@@ -336,20 +336,6 @@ def solution_data():
         initial_conditions = initial_conditions_data(),
     )
 
-@pytest.fixture
-def dict_without_attrs():
-    return {
-        "abc": {}
-    }
-
-@pytest.fixture
-def dict_with_attrs():
-    return {
-        "abc": {},
-        "attrs": {"a": 2}
-    }
-
-
 @pytest.fixture(params=[
     (experiment_registry(), experiment_data()),
     (experiment_registry_as_group(), experiment_data()),
@@ -358,8 +344,6 @@ def dict_with_attrs():
     (solution_registry(), internal_data_data()),
     (solution_registry(), initial_conditions_data()),
     (solution_registry(), solution_data()),
-    (dict_as_group_registry, dict_with_attrs()),
-    (dict_as_group_registry, dict_without_attrs()),
     (builtin_numbers_registry, 1),
     (builtin_numbers_registry, 1.0),
     (builtin_text_registry, b"abcd"),
@@ -378,10 +362,6 @@ def obj_registry(request):
     (solution_registry(), internal_data_data()),
     (solution_registry(), initial_conditions_data()),
     (solution_registry(), solution_data()),
-    (dict_as_group_registry, dict_with_attrs()),
-    (dict_as_group_registry, dict_without_attrs()),
-    (frozen_empty_registry(), dict_with_attrs()),
-    (frozen_empty_registry(), dict_without_attrs()),
     (builtin_numbers_registry, 1),
     (builtin_numbers_registry, 1.0),
     (frozen_empty_registry(), 1),
