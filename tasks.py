@@ -2,6 +2,10 @@ from __future__ import print_function
 from invoke import run, ctask as task, Collection
 from invoke.executor import Executor
 
+############################
+# THIS NEEDS REWRITING !!!!#
+# DO NOT USE !!!           #
+############################
 PACKAGE = "h5preserve"
 DESCRIPTION = "DESCRIPTION.rst"
 CHANGELOG = "CHANGELOG.rst"
