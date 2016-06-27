@@ -195,7 +195,8 @@ class RegistryContainer(MutableSequence):
             )
             new_obj.attrs.update(val.attrs)
         # pylint: disable=protected-access
-        new_obj.attrs[H5PRESERVE_ATTR_LABEL] = val._label
+        if val._label is not None:
+            new_obj.attrs[H5PRESERVE_ATTR_LABEL] = val._label
         if val._namespace is not None:
             new_obj.attrs[H5PRESERVE_ATTR_NAMESPACE] = val._namespace
         if val._version is not None:
@@ -225,6 +226,8 @@ class RegistryContainer(MutableSequence):
 
     def _obj_to_h5preserve(self, obj):
         """convert python object to h5preserve representation"""
+        if isinstance(obj, ContainerBase):
+            return obj
         val_type = type(obj)
         for registry in self:
             # pylint: disable=protected-access

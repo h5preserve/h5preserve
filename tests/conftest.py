@@ -101,6 +101,28 @@ def experiment_registry():
     return registry
 
 @pytest.fixture
+def experiment_registry_as_group():
+    registry = Registry("experiment")
+
+    @registry.dumper(Experiment, "Experiment", version=1)
+    def _exp_dump(experiment):
+        return GroupContainer(
+            dataset=DatasetContainer(data = experiment.data),
+            attrs = {
+                "time started": experiment.time_started
+            }
+        )
+
+    @registry.loader("Experiment", version=1)
+    def _exp_load(dataset):
+        return Experiment(
+            data=dataset["dataset"]["data"],
+            time_started=dataset.attrs["time started"]
+        )
+
+    return registry
+
+@pytest.fixture
 def invalid_dumper_experiment_registry():
     registry = Registry("incorrect dumper experiment")
 
@@ -327,8 +349,10 @@ def dict_with_attrs():
         "attrs": {"a": 2}
     }
 
+
 @pytest.fixture(params=[
     (experiment_registry(), experiment_data()),
+    (experiment_registry_as_group(), experiment_data()),
     (frozen_experiment_registry(), experiment_data()),
     (None_version_experiment_registry(), experiment_data()),
     (solution_registry(), internal_data_data()),
