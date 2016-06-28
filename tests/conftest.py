@@ -30,6 +30,8 @@ class Experiment(object):
             self.time_started == other.time_started
         )
 
+Experiments = namedtuple("Experiments", ["runs", "name"])
+
 def _better_eq(self, other):
     if not isinstance(other, self.__class__):
         return False
@@ -123,6 +125,44 @@ def experiment_registry_as_group():
     return registry
 
 @pytest.fixture
+def experiment_experiments_registry():
+    registry = Registry("experiments")
+
+    @registry.dumper(Experiment, "Experiment", version=1)
+    def _exp_dump(experiment):
+        return GroupContainer(
+            dataset=DatasetContainer(data = experiment.data),
+            attrs = {
+                "time started": experiment.time_started
+            }
+        )
+
+    @registry.loader("Experiment", version=1)
+    def _exp_load(dataset):
+        return Experiment(
+            data=dataset["dataset"]["data"],
+            time_started=dataset.attrs["time started"]
+        )
+
+    @registry.dumper(Experiments, "Experiments", version=1)
+    def _exp_dump(experiments):
+        return GroupContainer(
+            runs=GroupContainer(**experiments.runs),
+            attrs = {
+                "name": experiments.name
+            }
+        )
+
+    @registry.loader("Experiments", version=1)
+    def _exp_load(group):
+        return Experiments(
+            runs={run: exp for run, exp in group["runs"].items()},
+            name=group.attrs["name"]
+        )
+
+    return registry
+
+@pytest.fixture
 def invalid_dumper_experiment_registry():
     registry = Registry("incorrect dumper experiment")
 
@@ -205,6 +245,36 @@ def experiment_data():
     return Experiment(
         data=np.random.rand(100),
         time_started="1970-01-01 00:00:00"
+    )
+
+@pytest.fixture
+def multi_experiment_data():
+    return Experiments(runs={
+        "1": Experiment(
+            data=np.random.rand(100),
+            time_started="1970-01-01 00:00:00"
+        ),
+        "2": Experiment(
+            data=np.random.rand(100),
+            time_started="1970-01-02 00:00:00"
+        ),
+        "3": Experiment(
+            data=np.random.rand(100),
+            time_started="1970-01-03 00:00:00"
+        ),
+        "4": Experiment(
+            data=np.random.rand(100),
+            time_started="1970-01-04 00:00:00"
+        ),
+        "5": Experiment(
+            data=np.random.rand(100),
+            time_started="1970-01-05 00:00:00"
+        ),
+        "6": Experiment(
+            data=np.random.rand(100),
+            time_started="1970-01-06 00:00:00"
+        ),
+    }, name="test"
     )
 
 @pytest.fixture
@@ -348,6 +418,7 @@ def solution_data():
     (builtin_numbers_registry, 1.0),
     (builtin_text_registry, b"abcd"),
     (builtin_text_registry, u"abcd"),
+    (experiment_experiments_registry(), multi_experiment_data()),
 ])
 def obj_registry(request):
     return {

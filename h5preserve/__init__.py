@@ -271,14 +271,8 @@ class RegistryContainer(MutableSequence):
         obj
             the object to dump
         """
-        # pylint: disable=protected-access
         if not isinstance(obj, ContainerBase):
             raise TypeError(NOT_LOADABLE.format(type(obj)))
-        elif obj._namespace is None:
-            return obj
-        elif obj._namespace not in self:
-            raise RuntimeError(UNKNOWN_NAMESPACE.format(obj._namespace))
-        # pylint: enable=protected-access
 
         if isinstance(obj, GroupContainer):
             new_obj = GroupContainer(
@@ -291,6 +285,13 @@ class RegistryContainer(MutableSequence):
             new_obj._version = obj._version
             # pylint: enable=protected-access
             obj = new_obj
+
+        # pylint: disable=protected-access
+        if obj._namespace is None:
+            return obj
+        elif obj._namespace not in self:
+            raise RuntimeError(UNKNOWN_NAMESPACE.format(obj._namespace))
+        # pylint: enable=protected-access
 
         return self._get_loader(obj)(obj)
 
