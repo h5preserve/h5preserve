@@ -700,16 +700,10 @@ def new_registry_list(*registries):
     *registries : list of Registry
         the list of registries to be associated with this container
     """
-    from .additional_registries import (
-        none_python_registry, builtin_numbers_registry,
-        builtin_text_registry, sequence_as_dataset_registry,
-    )
+    from .additional_registries import BUILTIN_REGISTRIES
+    r = BUILTIN_REGISTRIES + registries
     return RegistryContainer(
-        none_python_registry,
-        builtin_numbers_registry,
-        builtin_text_registry,
-        sequence_as_dataset_registry,
-        *registries
+        *r
     )
 
 RECURSIVE_DUMPING_TYPES = {

@@ -88,3 +88,10 @@ none_python_registry.freeze()
 builtin_numbers_registry.freeze()
 builtin_text_registry.freeze()
 sequence_as_dataset_registry.freeze()
+
+BUILTIN_REGISTRIES = (
+    none_python_registry,
+    builtin_numbers_registry,
+    builtin_text_registry,
+    sequence_as_dataset_registry,
+)
