@@ -11,12 +11,17 @@ from h5py import File
 
 from h5preserve import (
     Registry, RegistryContainer, new_registry_list, GroupContainer,
-    DatasetContainer
+    DatasetContainer, OnDemandGroupContainer,
+
 )
 from h5preserve.additional_registries import (
     none_python_registry, builtin_numbers_registry,
     builtin_text_registry
 )
+from h5preserve._utils import (
+    OnDemandContainer
+)
+
 
 ### Classes for testng ###
 class Experiment(object):
@@ -29,6 +34,27 @@ class Experiment(object):
             all(self.data == other.data) and
             self.time_started == other.time_started
         )
+
+class OnDemandExperiment(object):
+    def __init__(self, data, time_started):
+        self._data = data
+        self.time_started = time_started
+
+    def __eq__(self, other):
+        return (
+            all(self.data == other.data) and
+            self.time_started == other.time_started
+        )
+
+    @property
+    def data(self):
+        if isinstance(self._data, OnDemandContainer):
+            self._data = self._data()
+        return self._data
+
+    def _h5preserve_update(self):
+        self._h5preserve_dump("dataset", self._data)
+
 
 Experiments = namedtuple("Experiments", ["runs", "name"])
 
@@ -118,6 +144,28 @@ def experiment_registry_as_group():
     @registry.loader("Experiment", version=1)
     def _exp_load(dataset):
         return Experiment(
+            data=dataset["dataset"]["data"],
+            time_started=dataset.attrs["time started"]
+        )
+
+    return registry
+
+@pytest.fixture
+def experiment_registry_as_on_demand_group():
+    registry = Registry("experiment")
+
+    @registry.dumper(OnDemandExperiment, "Experiment", version=1)
+    def _exp_dump(experiment):
+        return OnDemandGroupContainer(
+            dataset=DatasetContainer(data = experiment.data),
+            attrs = {
+                "time started": experiment.time_started
+            }
+        )
+
+    @registry.loader("Experiment", version=1)
+    def _exp_load(dataset):
+        return OnDemandExperiment(
             data=dataset["dataset"]["data"],
             time_started=dataset.attrs["time started"]
         )
@@ -243,6 +291,13 @@ def frozen_experiment_registry():
 @pytest.fixture
 def experiment_data():
     return Experiment(
+        data=np.random.rand(100),
+        time_started="1970-01-01 00:00:00"
+    )
+
+@pytest.fixture
+def on_demand_experiment_data():
+    return OnDemandExperiment(
         data=np.random.rand(100),
         time_started="1970-01-01 00:00:00"
     )
@@ -409,6 +464,7 @@ def solution_data():
 @pytest.fixture(params=[
     (experiment_registry(), experiment_data()),
     (experiment_registry_as_group(), experiment_data()),
+    (experiment_registry_as_on_demand_group(), on_demand_experiment_data()),
     (frozen_experiment_registry(), experiment_data()),
     (None_version_experiment_registry(), experiment_data()),
     (solution_registry(), internal_data_data()),
@@ -428,6 +484,7 @@ def obj_registry(request):
 
 @pytest.fixture(params=[
     (experiment_registry(), experiment_data()),
+    (experiment_registry_as_on_demand_group(), on_demand_experiment_data()),
     (frozen_experiment_registry(), experiment_data()),
     (None_version_experiment_registry(), experiment_data()),
     (solution_registry(), internal_data_data()),

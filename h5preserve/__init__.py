@@ -7,14 +7,26 @@ native python types.
 :license: 3-clause BSD
 """
 from collections import (
-    MutableMapping, namedtuple, defaultdict, MutableSequence,
+    MutableMapping, defaultdict, MutableSequence,
 )
 from warnings import warn
+import weakref
 
 import six
 
 from numpy import ndarray
 import h5py
+
+from ._utils import (
+    get_group_items as _get_group_items,
+    get_dataset_data as _get_dataset_data,
+    on_demand_group_dumper_generator as _on_demand_group_dumper_generator,
+    DumperMap as _DumperMap,
+    H5PRESERVE_ATTR_NAMESPACE,
+    H5PRESERVE_ATTR_LABEL,
+    H5PRESERVE_ATTR_VERSION,
+    H5PRESERVE_ATTR_ON_DEMAND,
+)
 
 # versioneer stuff
 from ._version import get_versions
@@ -45,10 +57,6 @@ H5PY_ATTR_WRITABLE_TYPES = {
 H5PY_ATTR_WRITABLE_TYPES.add(six.text_type)
 H5PY_ATTR_WRITABLE_TYPES.add(six.binary_type)
 
-H5PRESERVE_ATTR_NAMESPACE = "_h5preserve_namespace"
-H5PRESERVE_ATTR_LABEL = "_h5preserve_label"
-H5PRESERVE_ATTR_VERSION = "_h5preserve_version"
-
 UNKNOWN_NAMESPACE = "Unknown namespace {}."
 UNSUPPORTED_H5PY_TYPE = "Unsupported h5py type {}."
 UNKNOWN_H5PRESERVE_TYPE = "Unknown h5preserve type {}."
@@ -61,8 +69,6 @@ NO_SUITABLE_LOADER = "Cannot find suitable loader for label {} with version {}"
 INVALID_DATASET_OPTION = "{} is not a valid dataset option."
 NO_PATH = "No path defined for hard link."
 ATTR_NOT_DUMPED = "Attribute {}={} has not been dumped."
-
-_DumperMap = namedtuple("_DumperMap", "label func")
 
 
 class RegistryContainer(MutableSequence):
@@ -129,16 +135,12 @@ class RegistryContainer(MutableSequence):
         attrs = dict(h5py_obj.attrs)
         if isinstance(h5py_obj, h5py.Group):
             return GroupContainer(
-                attrs,
-                **{
-                    name: self._h5py_to_h5preserve(item)
-                    for name, item in h5py_obj.items()
-                }
+                attrs, **_get_group_items(h5py_obj, attrs, self)
             )
         elif isinstance(h5py_obj, h5py.Dataset):
             return DatasetContainer(
                 attrs,
-                data=h5py_obj[()],
+                data=_get_dataset_data(h5py_obj, attrs),
                 shape=h5py_obj.shape,
                 fillvalue=h5py_obj.fillvalue,
                 dtype=h5py_obj.dtype,
@@ -187,8 +189,17 @@ class RegistryContainer(MutableSequence):
         if isinstance(val, GroupContainer):
             new_obj = h5py_group.create_group(key)
             new_obj.attrs.update(val.attrs)
-            for obj_name, obj_val in val.items():
-                self.to_file(new_obj, obj_name, obj_val)
+            if isinstance(val, OnDemandBase):
+                # pylint: disable=protected-access
+                py_obj = val._ref()
+                py_obj._h5preserve_dump = _on_demand_group_dumper_generator(
+                    self, new_obj
+                )
+                py_obj._h5preserve_update()
+                # pylint: enable=protected-access
+            else:
+                for obj_name, obj_val in val.items():
+                    self.to_file(new_obj, obj_name, obj_val)
         elif isinstance(val, DatasetContainer):
             new_obj = h5py_group.create_dataset(
                 key, **val
@@ -219,7 +230,11 @@ class RegistryContainer(MutableSequence):
             return obj
         # pylint: enable=unidiomatic-typecheck
         converted_obj = self._obj_to_h5preserve(obj)
-        if isinstance(converted_obj, tuple(RECURSIVE_DUMPING_TYPES)):
+        if (
+            not isinstance(converted_obj, OnDemandBase)
+        ) and (
+            isinstance(converted_obj, tuple(RECURSIVE_DUMPING_TYPES))
+        ):
             for key, val in converted_obj.items():
                 converted_obj[key] = self.dump(val)
         return converted_obj
@@ -252,14 +267,16 @@ class RegistryContainer(MutableSequence):
             else:
                 version = sorted(dumpers, reverse=True)[0]
             label, dumper = dumpers[version]
-        obj = dumper(obj)
-        if isinstance(obj, ContainerBase):
+        dumped_obj = dumper(obj)
+        if isinstance(dumped_obj, ContainerBase):
             # pylint: disable=protected-access
-            obj._namespace = namespace
-            obj._label = label
-            obj._version = version
+            dumped_obj._namespace = namespace
+            dumped_obj._label = label
+            dumped_obj._version = version
+            if isinstance(dumped_obj, OnDemandBase):
+                dumped_obj._ref = weakref.ref(obj)
             # pylint: enable=protected-access
-            return obj
+            return dumped_obj
         raise TypeError(INVALID_DUMPER.format(label, version))
 
     def load(self, obj):
@@ -341,7 +358,16 @@ class ContainerBase(MutableMapping):
         self._namespace = attrs.pop(H5PRESERVE_ATTR_NAMESPACE, None)
         self._label = attrs.pop(H5PRESERVE_ATTR_LABEL, None)
         self._version = attrs.pop(H5PRESERVE_ATTR_VERSION, None)
+        self._on_demand = attrs.pop(H5PRESERVE_ATTR_ON_DEMAND, False)
         self.attrs = attrs
+
+
+class OnDemandBase(ContainerBase):
+    # pylint: disable=abstract-method,missing-docstring
+    def __init__(self, attrs=None):
+        self._ref = None
+        super(OnDemandBase, self).__init__(attrs)
+        self._on_demand = True
 
 
 class GroupContainer(ContainerBase):
@@ -384,6 +410,15 @@ class GroupContainer(ContainerBase):
                 if val is not None
             )
         )
+
+
+class OnDemandGroupContainer(GroupContainer, OnDemandBase):
+    # pylint: disable=too-many-ancestors
+    """
+    Subclass of `GroupContainer` which supports accessing group members on
+    demand, rather that loading immediately.
+    """
+    pass
 
 
 class DatasetContainer(ContainerBase):
@@ -705,6 +740,7 @@ def new_registry_list(*registries):
     return RegistryContainer(
         *r
     )
+
 
 RECURSIVE_DUMPING_TYPES = {
     GroupContainer
