@@ -12,14 +12,11 @@ from h5py import File
 from h5preserve import (
     Registry, RegistryContainer, new_registry_list, GroupContainer,
     DatasetContainer, OnDemandGroupContainer,
-
+    wrap_on_demand, OnDemandContainer,
 )
 from h5preserve.additional_registries import (
     none_python_registry, builtin_numbers_registry,
     builtin_text_registry
-)
-from h5preserve._utils import (
-    OnDemandContainer
 )
 
 
@@ -53,7 +50,7 @@ class OnDemandExperiment(object):
         return self._data
 
     def _h5preserve_update(self):
-        self._h5preserve_dump("dataset", self._data)
+        wrap_on_demand(self, "dataset", self._data)
 
 
 Experiments = namedtuple("Experiments", ["runs", "name"])

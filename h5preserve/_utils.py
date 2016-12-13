@@ -21,13 +21,8 @@ def get_group_items(h5py_obj, attrs, registries):
     """
     if attrs.get(H5PRESERVE_ATTR_ON_DEMAND, False):
         return {
-            name: OnDemandContainer(
-                lambda n=name: registries.load(
-                    # pylint: disable=protected-access
-                    registries._h5py_to_h5preserve(h5py_obj[n])
-                    # pylint: enable=protected-access
-                )
-            ) for name in h5py_obj
+            name: get_on_demand_group_item(h5py_obj, name, registries)
+            for name in h5py_obj
         }
     return {
         # pylint: disable=protected-access
@@ -35,6 +30,22 @@ def get_group_items(h5py_obj, attrs, registries):
         # pylint: enable=protected-access
         for name, item in h5py_obj.items()
     }
+
+
+def get_on_demand_group_item(h5py_obj, name, registries):
+    """
+    Return item from group as an on demand item
+    """
+    def get_item():
+        """
+        func for OnDemandContainer
+        """
+        return registries.load(
+            # pylint: disable=protected-access
+            registries._h5py_to_h5preserve(h5py_obj[name])
+            # pylint: enable=protected-access
+        )
+    return OnDemandContainer(get_item())
 
 
 def get_dataset_data(h5py_obj, attrs):
@@ -59,6 +70,7 @@ def on_demand_group_dumper_generator(registry_container, h5py_group):
         registry_container.to_file(
             h5py_group, key, registry_container.dump(val)
         )
+        return get_on_demand_group_item(h5py_group, key, registry_container)
     return on_demand_dumper
 
 

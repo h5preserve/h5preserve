@@ -22,6 +22,7 @@ from ._utils import (
     get_dataset_data as _get_dataset_data,
     on_demand_group_dumper_generator as _on_demand_group_dumper_generator,
     DumperMap as _DumperMap,
+    OnDemandContainer,
     H5PRESERVE_ATTR_NAMESPACE,
     H5PRESERVE_ATTR_LABEL,
     H5PRESERVE_ATTR_VERSION,
@@ -740,6 +741,34 @@ def new_registry_list(*registries):
     return RegistryContainer(
         *r
     )
+
+
+def wrap_on_demand(obj, key, val):
+    """
+    Wrap `val` such that it can be used on demand.
+
+    `wrap_on_demand` returns either the original `val` if `obj` has not yet
+    been dumped, or a wrapped version of `val` if `obj` has been dumped.
+
+    `wrap_on_demand` automatically deals with wrapping/unwrapping if needed, so
+    it is save to repeatedly call on the same object.
+
+    Parameters
+    ----------
+    obj : any dumpable object
+        the object which `val` is a member of or an attribute of
+    key : string
+        the key to be used when writing out `val`
+    val : any dumpable object
+        the object to be wrapped
+    """
+    if hasattr(obj, "_h5preserve_dump"):
+        # pylint: disable=protected-access
+        if isinstance(val, OnDemandContainer):
+            val = val()
+        return obj._h5preserve_dump(key, val)
+        # pylint: enable=protected-access
+    return val
 
 
 RECURSIVE_DUMPING_TYPES = {
