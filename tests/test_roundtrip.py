@@ -10,7 +10,8 @@ def test_roundtrip(tmpdir, obj_registry):
         f["first"] = obj_registry["dumpable_object"]
 
     with hp_open(tmpfile, registries=obj_registry["registries"]) as f:
-        assert f["first"] == obj_registry["dumpable_object"]
+        roundtripped = f["first"]
+        assert roundtripped == obj_registry["dumpable_object"]
 
 @pytest.mark.roundtrip
 def test_roundtrip_without_open(tmpdir, obj_registry):
@@ -19,7 +20,8 @@ def test_roundtrip_without_open(tmpdir, obj_registry):
         f["first"] = obj_registry["dumpable_object"]
 
     with H5PreserveFile(h5py.File(tmpfile), registries=obj_registry["registries"]) as f:
-        assert f["first"] == obj_registry["dumpable_object"]
+        roundtripped = f["first"]
+        assert roundtripped == obj_registry["dumpable_object"]
 
 @pytest.mark.roundtrip
 def test_roundtrip_with_defaults(tmpdir, obj_registry_with_defaults):
@@ -29,7 +31,8 @@ def test_roundtrip_with_defaults(tmpdir, obj_registry_with_defaults):
         f["first"] = obj_registry["dumpable_object"]
 
     with hp_open(tmpfile, registries=obj_registry["registries"]) as f:
-        assert f["first"] == obj_registry["dumpable_object"]
+        roundtripped = f["first"]
+        assert roundtripped == obj_registry["dumpable_object"]
 
 @pytest.mark.roundtrip
 def test_roundtrip_without_open_with_defaults(tmpdir, obj_registry_with_defaults):
@@ -39,7 +42,8 @@ def test_roundtrip_without_open_with_defaults(tmpdir, obj_registry_with_defaults
         f["first"] = obj_registry["dumpable_object"]
 
     with H5PreserveFile(h5py.File(tmpfile), registries=obj_registry["registries"]) as f:
-        assert f["first"] == obj_registry["dumpable_object"]
+        roundtripped = f["first"]
+        assert roundtripped == obj_registry["dumpable_object"]
 
 if hasattr(h5py, "Empty"):
     @pytest.mark.roundtrip
@@ -49,7 +53,8 @@ if hasattr(h5py, "Empty"):
             f["first"] = obj_registry_with_none["dumpable_object"]
 
         with hp_open(tmpfile, registries=obj_registry_with_none["registries"]) as f:
-            assert f["first"] == obj_registry_with_none["dumpable_object"]
+            roundtripped = f["first"]
+            assert roundtripped == obj_registry_with_none["dumpable_object"]
 
     @pytest.mark.roundtrip
     def test_roundtrip_without_open_with_none(tmpdir, obj_registry_with_none):
@@ -58,7 +63,8 @@ if hasattr(h5py, "Empty"):
             f["first"] = obj_registry_with_none["dumpable_object"]
 
         with H5PreserveFile(h5py.File(tmpfile), registries=obj_registry_with_none["registries"]) as f:
-            assert f["first"] == obj_registry_with_none["dumpable_object"]
+            roundtripped = f["first"]
+            assert roundtripped == obj_registry_with_none["dumpable_object"]
 
     @pytest.mark.roundtrip
     def test_roundtrip_with_defaults_with_none(tmpdir, obj_registry_with_none_with_defaults):
@@ -68,7 +74,8 @@ if hasattr(h5py, "Empty"):
             f["first"] = obj_registry_with_none["dumpable_object"]
 
         with hp_open(tmpfile, registries=obj_registry_with_none["registries"]) as f:
-            assert f["first"] == obj_registry_with_none["dumpable_object"]
+            roundtripped = f["first"]
+            assert roundtripped == obj_registry_with_none["dumpable_object"]
 
     @pytest.mark.roundtrip
     def test_roundtrip_without_open_with_defaults_with_none(tmpdir, obj_registry_with_none_with_defaults):
@@ -78,4 +85,5 @@ if hasattr(h5py, "Empty"):
             f["first"] = obj_registry_with_none["dumpable_object"]
 
         with H5PreserveFile(h5py.File(tmpfile), registries=obj_registry_with_none["registries"]) as f:
-            assert f["first"] == obj_registry_with_none["dumpable_object"]
+            roundtripped = f["first"]
+            assert roundtripped == obj_registry_with_none["dumpable_object"]

@@ -15,11 +15,11 @@ H5PRESERVE_ATTR_ON_DEMAND = "_h5preserve_on_demand"
 DumperMap = namedtuple("DumperMap", "label func")
 
 
-def get_group_items(h5py_obj, attrs, registries):
+def get_group_items(h5py_obj, attrs, registries, load_on_demand):
     """
     Return group items considering the use of on-demand support
     """
-    if attrs.get(H5PRESERVE_ATTR_ON_DEMAND, False):
+    if attrs.get(H5PRESERVE_ATTR_ON_DEMAND, False) and not load_on_demand:
         return {
             name: get_on_demand_group_item(h5py_obj, name, registries)
             for name in h5py_obj
@@ -38,23 +38,25 @@ def get_on_demand_group_item(h5py_obj, name, registries):
     """
     def get_item():
         """
-        func for OnDemandContainer
+        func for OnDemandWrapper
         """
         return registries.load(
             # pylint: disable=protected-access
-            registries._h5py_to_h5preserve(h5py_obj[name])
+            registries._h5py_to_h5preserve(
+                h5py_obj[name], load_on_demand=True
+            )
             # pylint: enable=protected-access
         )
-    return OnDemandContainer(get_item)
+    return OnDemandWrapper(get_item)
 
 
-def get_dataset_data(h5py_obj, attrs):
+def get_dataset_data(h5py_obj, attrs, load_on_demand):
     """
     Return the actual data from a dataset considering the use of on-demand
     support.
     """
-    if attrs.get(H5PRESERVE_ATTR_ON_DEMAND, False):
-        return OnDemandContainer(lambda: h5py_obj[()])
+    if attrs.get(H5PRESERVE_ATTR_ON_DEMAND, False) and not load_on_demand:
+        return OnDemandWrapper(lambda: h5py_obj[()])
     return h5py_obj[()]
 
 
@@ -74,7 +76,7 @@ def on_demand_group_dumper_generator(registry_container, h5py_group):
     return on_demand_dumper
 
 
-class OnDemandContainer(Callable):
+class OnDemandWrapper(Callable):
     """
     Wrapper which represents a container which can be accessed on demand.
     """

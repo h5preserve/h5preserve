@@ -1,7 +1,9 @@
 # coding: utf-8
+from __future__ import print_function
+
 import pytest
 
-from collections import namedtuple
+from collections import namedtuple, MutableMapping
 
 import six
 
@@ -12,7 +14,7 @@ from h5py import File
 from h5preserve import (
     Registry, RegistryContainer, new_registry_list, GroupContainer,
     DatasetContainer, OnDemandGroupContainer,
-    wrap_on_demand, OnDemandContainer,
+    wrap_on_demand, OnDemandWrapper, OnDemandDatasetContainer,
 )
 from h5preserve.additional_registries import (
     none_python_registry, builtin_numbers_registry,
@@ -45,7 +47,7 @@ class OnDemandExperiment(object):
 
     @property
     def data(self):
-        if isinstance(self._data, OnDemandContainer):
+        if isinstance(self._data, OnDemandWrapper):
             self._data = self._data()
         return self._data
 
@@ -90,6 +92,55 @@ Solution = namedtuple("Solution", [
     "internal_data", "initial_conditions", "t_roots", "y_roots",
 ])
 Solution.__eq__ = _better_eq
+
+
+class Solutions(MutableMapping):
+    """
+    Container holding the different solutions generated
+    """
+    def __init__(self, **solutions):
+        self._solutions = {}
+        self.update(solutions)
+
+    def __getitem__(self, key):
+        value = self._solutions[key]
+        if isinstance(value, OnDemandWrapper):
+            value = value()
+            self._solutions[key] = value
+        return value
+
+    def __setitem__(self, key, val):
+        self._solutions[key] = wrap_on_demand(self, key, val)
+
+    def __delitem__(self, key):
+        del self._solutions[key]
+
+    def __iter__(self):
+        for key in self._solutions:
+            yield key
+
+    def __len__(self):
+        return len(self._solutions)
+
+    def _h5preserve_update(self):
+        """
+        Support for h5preserve on demand use
+        """
+        for key, val in self.items():
+            # We don't update Solutions as we want to compare old to new
+            # self._solutions[key] = wrap_on_demand(self, key, val)
+            wrap_on_demand(self, key, val)
+
+    def __repr__(self):
+        return "Solutions(" + ', '.join(
+            "{key}={val}".format(key=key, val=val)
+            for key, val in self._solutions.items()
+        ) + ")"
+
+    def __eq__(self, other):
+        if self.__class__ == other.__class__ and dict(self) == dict(other):
+            return True
+        return False
 ###
 
 
@@ -153,8 +204,8 @@ def experiment_registry_as_on_demand_group():
 
     @registry.dumper(OnDemandExperiment, "Experiment", version=1)
     def _exp_dump(experiment):
-        return OnDemandGroupContainer(
-            dataset=DatasetContainer(data = experiment.data),
+        return OnDemandDatasetContainer(
+            data = experiment.data,
             attrs = {
                 "time started": experiment.time_started
             }
@@ -163,7 +214,7 @@ def experiment_registry_as_on_demand_group():
     @registry.loader("Experiment", version=1)
     def _exp_load(dataset):
         return OnDemandExperiment(
-            data=dataset["dataset"]["data"],
+            data=dataset["data"],
             time_started=dataset.attrs["time started"]
         )
 
@@ -419,17 +470,115 @@ def solution_registry():
     return registry
 
 @pytest.fixture
+def solutions_registry():
+    registry = Registry("solutions")
+
+    @registry.dumper(InternalData, "InternalData", version=1)
+    def _internal_dump(internal_data):
+        return GroupContainer(
+            derivs = internal_data.derivs,
+            params = internal_data.params,
+            angles = internal_data.angles,
+            v_r_normal = internal_data.v_r_normal,
+            v_phi_normal = internal_data.v_phi_normal,
+            rho_normal = internal_data.rho_normal,
+            v_r_taylor = internal_data.v_r_taylor,
+            v_phi_taylor = internal_data.v_phi_taylor,
+            rho_taylor = internal_data.rho_taylor,
+        )
+
+    @registry.loader("InternalData", version=1)
+    def _internal_load(group):
+        return InternalData(
+            derivs = group["derivs"]["data"],
+            params = group["params"]["data"],
+            angles = group["angles"]["data"],
+            v_r_normal = group["v_r_normal"]["data"],
+            v_phi_normal = group["v_phi_normal"]["data"],
+            rho_normal = group["rho_normal"]["data"],
+            v_r_taylor = group["v_r_taylor"]["data"],
+            v_phi_taylor = group["v_phi_taylor"]["data"],
+            rho_taylor = group["rho_taylor"]["data"],
+        )
+
+    @registry.dumper(InitialConditions, "InitialConditions", version=1)
+    def _initial_dump(initial_conditions):
+        return GroupContainer(
+            attrs={
+                "norm_kepler_sq": initial_conditions.norm_kepler_sq,
+                "c_s": initial_conditions.c_s,
+                "eta_O": initial_conditions.eta_O,
+                "eta_A": initial_conditions.eta_A,
+                "eta_H": initial_conditions.eta_H,
+                "beta": initial_conditions.beta,
+                "init_con": initial_conditions.init_con,
+            }, angles = initial_conditions.angles,
+        )
+
+    @registry.loader("InitialConditions", version=1)
+    def _initial_load(group):
+        return InitialConditions(
+            norm_kepler_sq = group.attrs["norm_kepler_sq"],
+            c_s = group.attrs["c_s"],
+            eta_O = group.attrs["eta_O"],
+            eta_A = group.attrs["eta_A"],
+            eta_H = group.attrs["eta_H"],
+            beta = group.attrs["beta"],
+            init_con = group.attrs["init_con"],
+            angles = group["angles"]["data"],
+        )
+
+    @registry.dumper(Solution, "Solution", version=1)
+    def _solution_dumper(solution):
+        return GroupContainer(
+            attrs={
+                "flag": solution.flag,
+                "coordinate_system": solution.coordinate_system,
+            },
+            angles = solution.angles,
+            solution = solution.solution,
+            internal_data = solution.internal_data,
+            initial_conditions = solution.initial_conditions,
+            t_roots = solution.t_roots,
+            y_roots = solution.y_roots,
+        )
+
+    @registry.loader("Solution", version=1)
+    def _solution_loader(group):
+        return Solution(
+            flag = group.attrs["flag"],
+            coordinate_system = group.attrs["coordinate_system"],
+            angles = group["angles"]["data"],
+            solution = group["solution"]["data"],
+            t_roots = group["t_roots"]["data"],
+            y_roots = group["y_roots"]["data"],
+            internal_data = group["internal_data"],
+            initial_conditions = group["initial_conditions"],
+        )
+
+    @registry.dumper(Solutions, "Solutions", version=1)
+    def _solutions_dumper(solutions):
+        return OnDemandGroupContainer(**solutions)
+
+    @registry.loader("Solutions", version=1)
+    def _solutions_loader(group):
+        return Solutions(**group)
+
+    return registry
+
+
+@pytest.fixture
 def internal_data_data():
     return InternalData(
-        derivs = np.random.rand(1000, 8),
-        params = np.random.rand(1000, 8),
-        angles = np.random.rand(1000),
-        v_r_normal = np.random.rand(1000),
-        v_phi_normal = np.random.rand(1000),
-        rho_normal = np.random.rand(1000),
-        v_r_taylor = np.random.rand(1000),
-        v_phi_taylor = np.random.rand(1000),
-        rho_taylor = np.random.rand(1000),
+        derivs = np.random.rand(5, 2),
+        params = np.random.rand(5, 2),
+        angles = np.random.rand(5),
+        v_r_normal = np.random.rand(5),
+        v_phi_normal = np.random.rand(5),
+        rho_normal = np.random.rand(5),
+        v_r_taylor = np.random.rand(5),
+        v_phi_taylor = np.random.rand(5),
+        rho_taylor = np.random.rand(5),
     )
 
 @pytest.fixture
@@ -437,12 +586,12 @@ def initial_conditions_data():
     return InitialConditions(
         norm_kepler_sq = 10,
         c_s = 1.0,
-        eta_O = 0.3,
+        eta_O = 0.5,
         eta_A = 0.001,
         eta_H = 5e-15,
         beta = 5/3,
-        init_con = np.random.rand(8),
-        angles = np.random.rand(1000),
+        init_con = np.random.rand(2),
+        angles = np.random.rand(5),
     )
 
 @pytest.fixture
@@ -450,13 +599,19 @@ def solution_data():
     return Solution(
         flag = 0,
         coordinate_system = "some thing",
-        angles = np.random.rand(1000),
-        solution = np.random.rand(1000, 8),
-        t_roots = np.random.rand(15),
-        y_roots = np.random.rand(15,8),
+        angles = np.random.rand(5),
+        solution = np.random.rand(5, 2),
+        t_roots = np.random.rand(3),
+        y_roots = np.random.rand(3,2),
         internal_data = internal_data_data(),
         initial_conditions = initial_conditions_data(),
     )
+
+@pytest.fixture
+def solutions_data():
+    return Solutions(**{
+        str(i): solution_data() for i in range(2)
+    })
 
 @pytest.fixture(params=[
     (experiment_registry(), experiment_data()),
@@ -467,6 +622,7 @@ def solution_data():
     (solution_registry(), internal_data_data()),
     (solution_registry(), initial_conditions_data()),
     (solution_registry(), solution_data()),
+    (solutions_registry(), solutions_data()),
     (builtin_numbers_registry, 1),
     (builtin_numbers_registry, 1.0),
     (builtin_text_registry, b"abcd"),

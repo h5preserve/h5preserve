@@ -22,7 +22,7 @@ from ._utils import (
     get_dataset_data as _get_dataset_data,
     on_demand_group_dumper_generator as _on_demand_group_dumper_generator,
     DumperMap as _DumperMap,
-    OnDemandContainer,
+    OnDemandWrapper,
     H5PRESERVE_ATTR_NAMESPACE,
     H5PRESERVE_ATTR_LABEL,
     H5PRESERVE_ATTR_VERSION,
@@ -129,19 +129,23 @@ class RegistryContainer(MutableSequence):
             return self._h5py_to_h5preserve(h5py_obj)
         raise RuntimeError(UNKNOWN_NAMESPACE.format(namespace))
 
-    def _h5py_to_h5preserve(self, h5py_obj):
+    def _h5py_to_h5preserve(self, h5py_obj, load_on_demand=False):
         """
         convert h5py object to h5preserve representation
         """
         attrs = dict(h5py_obj.attrs)
         if isinstance(h5py_obj, h5py.Group):
             return GroupContainer(
-                attrs, **_get_group_items(h5py_obj, attrs, self)
+                attrs, **_get_group_items(
+                    h5py_obj, attrs, self, load_on_demand=load_on_demand
+                )
             )
         elif isinstance(h5py_obj, h5py.Dataset):
             return DatasetContainer(
                 attrs,
-                data=_get_dataset_data(h5py_obj, attrs),
+                data=_get_dataset_data(
+                    h5py_obj, attrs, load_on_demand=load_on_demand
+                ),
                 shape=h5py_obj.shape,
                 fillvalue=h5py_obj.fillvalue,
                 dtype=h5py_obj.dtype,
@@ -213,6 +217,8 @@ class RegistryContainer(MutableSequence):
             new_obj.attrs[H5PRESERVE_ATTR_NAMESPACE] = val._namespace
         if val._version is not None:
             new_obj.attrs[H5PRESERVE_ATTR_VERSION] = val._version
+        if val._on_demand:
+            new_obj.attrs[H5PRESERVE_ATTR_ON_DEMAND] = val._on_demand
         # pylint: enable=protected-access
 
     def dump(self, obj):
@@ -287,9 +293,11 @@ class RegistryContainer(MutableSequence):
         Parameters
         ----------
         obj
-            the object to dump
+            the object to load
         """
-        if not isinstance(obj, ContainerBase):
+        if isinstance(obj, OnDemandWrapper):
+            return obj
+        elif not isinstance(obj, ContainerBase):
             raise TypeError(NOT_LOADABLE.format(type(obj)))
 
         if isinstance(obj, GroupContainer):
@@ -467,6 +475,15 @@ class DatasetContainer(ContainerBase):
                 if val is not None
             )
         )
+
+
+class OnDemandDatasetContainer(DatasetContainer, OnDemandBase):
+    # pylint: disable=too-many-ancestors
+    """
+    Subclass of `DatasetContainer` which supports accessing dataset data on
+    demand, rather that loading immediately.
+    """
+    pass
 
 
 class Registry(object):
@@ -764,7 +781,7 @@ def wrap_on_demand(obj, key, val):
     """
     if hasattr(obj, "_h5preserve_dump"):
         # pylint: disable=protected-access
-        if isinstance(val, OnDemandContainer):
+        if isinstance(val, OnDemandWrapper):
             val = val()
         return obj._h5preserve_dump(key, val)
         # pylint: enable=protected-access
