@@ -45,7 +45,7 @@ def get_on_demand_group_item(h5py_obj, name, registries):
             registries._h5py_to_h5preserve(h5py_obj[name])
             # pylint: enable=protected-access
         )
-    return OnDemandContainer(get_item())
+    return OnDemandContainer(get_item)
 
 
 def get_dataset_data(h5py_obj, attrs):
