@@ -13,12 +13,11 @@ from h5py import File
 
 from h5preserve import (
     Registry, RegistryContainer, new_registry_list, GroupContainer,
-    DatasetContainer, OnDemandGroupContainer,
-    wrap_on_demand, OnDemandWrapper, OnDemandDatasetContainer,
+    DatasetContainer, OnDemandGroupContainer, wrap_on_demand, OnDemandWrapper,
+    OnDemandDatasetContainer, DelayedContainer,
 )
 from h5preserve.additional_registries import (
-    none_python_registry, builtin_numbers_registry,
-    builtin_text_registry
+    none_python_registry, builtin_numbers_registry, builtin_text_registry,
 )
 
 
@@ -139,6 +138,40 @@ class Solutions(MutableMapping):
 
     def __eq__(self, other):
         if self.__class__ == other.__class__ and dict(self) == dict(other):
+            return True
+        return False
+
+
+class Run(object):
+    """
+    Container holding a single run
+    """
+    def __init__(self, solutions=None, final_solution=None):
+        if final_solution is None:
+            final_solution = DelayedContainer()
+        self._final_solution = final_solution
+        if solutions is None:
+            solutions = Solutions()
+        self.solutions = solutions
+
+    @property
+    def final_solution(self):
+        return self._final_solution
+
+    @final_solution.setter
+    def final_solution(self, soln):
+        if isinstance(self._final_solution, DelayedContainer):
+            self._final_solution.write_container(soln)
+            self._final_solution = soln
+        else:
+            raise RuntimeError("Cannot change final solution")
+
+    def __eq__(self, other):
+        if self.__class__ == other.__class__ and (
+            self.final_solution == other.final_solution
+        ) and (
+            self.solutions == other.solutions
+        ):
             return True
         return False
 ###
@@ -568,6 +601,118 @@ def solutions_registry():
 
 
 @pytest.fixture
+def run_registry():
+    registry = Registry("run")
+
+    @registry.dumper(InternalData, "InternalData", version=1)
+    def _internal_dump(internal_data):
+        return GroupContainer(
+            derivs = internal_data.derivs,
+            params = internal_data.params,
+            angles = internal_data.angles,
+            v_r_normal = internal_data.v_r_normal,
+            v_phi_normal = internal_data.v_phi_normal,
+            rho_normal = internal_data.rho_normal,
+            v_r_taylor = internal_data.v_r_taylor,
+            v_phi_taylor = internal_data.v_phi_taylor,
+            rho_taylor = internal_data.rho_taylor,
+        )
+
+    @registry.loader("InternalData", version=1)
+    def _internal_load(group):
+        return InternalData(
+            derivs = group["derivs"]["data"],
+            params = group["params"]["data"],
+            angles = group["angles"]["data"],
+            v_r_normal = group["v_r_normal"]["data"],
+            v_phi_normal = group["v_phi_normal"]["data"],
+            rho_normal = group["rho_normal"]["data"],
+            v_r_taylor = group["v_r_taylor"]["data"],
+            v_phi_taylor = group["v_phi_taylor"]["data"],
+            rho_taylor = group["rho_taylor"]["data"],
+        )
+
+    @registry.dumper(InitialConditions, "InitialConditions", version=1)
+    def _initial_dump(initial_conditions):
+        return GroupContainer(
+            attrs={
+                "norm_kepler_sq": initial_conditions.norm_kepler_sq,
+                "c_s": initial_conditions.c_s,
+                "eta_O": initial_conditions.eta_O,
+                "eta_A": initial_conditions.eta_A,
+                "eta_H": initial_conditions.eta_H,
+                "beta": initial_conditions.beta,
+                "init_con": initial_conditions.init_con,
+            }, angles = initial_conditions.angles,
+        )
+
+    @registry.loader("InitialConditions", version=1)
+    def _initial_load(group):
+        return InitialConditions(
+            norm_kepler_sq = group.attrs["norm_kepler_sq"],
+            c_s = group.attrs["c_s"],
+            eta_O = group.attrs["eta_O"],
+            eta_A = group.attrs["eta_A"],
+            eta_H = group.attrs["eta_H"],
+            beta = group.attrs["beta"],
+            init_con = group.attrs["init_con"],
+            angles = group["angles"]["data"],
+        )
+
+    @registry.dumper(Solution, "Solution", version=1)
+    def _solution_dumper(solution):
+        return GroupContainer(
+            attrs={
+                "flag": solution.flag,
+                "coordinate_system": solution.coordinate_system,
+            },
+            angles = solution.angles,
+            solution = solution.solution,
+            internal_data = solution.internal_data,
+            initial_conditions = solution.initial_conditions,
+            t_roots = solution.t_roots,
+            y_roots = solution.y_roots,
+        )
+
+    @registry.loader("Solution", version=1)
+    def _solution_loader(group):
+        return Solution(
+            flag = group.attrs["flag"],
+            coordinate_system = group.attrs["coordinate_system"],
+            angles = group["angles"]["data"],
+            solution = group["solution"]["data"],
+            t_roots = group["t_roots"]["data"],
+            y_roots = group["y_roots"]["data"],
+            internal_data = group["internal_data"],
+            initial_conditions = group["initial_conditions"],
+        )
+
+    @registry.dumper(Solutions, "Solutions", version=1)
+    def _solutions_dumper(solutions):
+        return OnDemandGroupContainer(**solutions)
+
+    @registry.loader("Solutions", version=1)
+    def _solutions_loader(group):
+        return Solutions(**group)
+
+    @registry.dumper(Run, "Run", version=1)
+    def _run_dumper(run):
+        return GroupContainer(
+            solutions = run.solutions,
+            final_solution = run.final_solution,
+        )
+
+    @registry.loader("Run", version=1)
+    def _run_loader(group):
+        return Run(
+            solutions = group["solutions"],
+            final_solution = group["final_solution"],
+        )
+
+    return registry
+
+
+@pytest.fixture
 def internal_data_data():
     return InternalData(
         derivs = np.random.rand(5, 2),
@@ -613,6 +758,12 @@ def solutions_data():
         str(i): solution_data() for i in range(2)
     })
 
+@pytest.fixture
+def run_data():
+    run = Run(solutions=solutions_data())
+    run.final_solution = solution_data()
+    return run
+
 @pytest.fixture(params=[
     (experiment_registry(), experiment_data()),
     (experiment_registry_as_group(), experiment_data()),
@@ -623,6 +774,7 @@ def solutions_data():
     (solution_registry(), initial_conditions_data()),
     (solution_registry(), solution_data()),
     (solutions_registry(), solutions_data()),
+    (run_registry(), run_data()),
     (builtin_numbers_registry, 1),
     (builtin_numbers_registry, 1.0),
     (builtin_text_registry, b"abcd"),

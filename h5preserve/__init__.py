@@ -184,42 +184,69 @@ class RegistryContainer(MutableSequence):
                 UNKNOWN_H5PRESERVE_TYPE.format(type(val))
             )
 
+    def _write_group_to_file(self, h5py_group, key, val):
+        """
+        Write group to an hdf5 file
+        """
+        new_obj = h5py_group.create_group(key)
+        new_obj.attrs.update(val.attrs)
+        if isinstance(val, OnDemandBase):
+            # pylint: disable=protected-access
+            py_obj = val._ref()
+            py_obj._h5preserve_dump = _on_demand_group_dumper_generator(
+                self, new_obj
+            )
+            py_obj._h5preserve_update()
+            # pylint: enable=protected-access
+        else:
+            for obj_name, obj_val in val.items():
+                self.to_file(new_obj, obj_name, obj_val)
+        return new_obj
+
+    @staticmethod
+    def _write_dataset_to_file(h5py_group, key, val):
+        """
+        Write datasets to an hdf5 file
+        """
+        new_obj = h5py_group.create_dataset(key, **val)
+        new_obj.attrs.update(val.attrs)
+        return new_obj
+
+    @staticmethod
+    def _write_h5preserve_metadata_to_file(h5py_obj, val):
+        """
+        Write the required metadata for h5preserve to file
+        """
+        # pylint: disable=protected-access
+        if val._label is not None:
+            h5py_obj.attrs[H5PRESERVE_ATTR_LABEL] = val._label
+        if val._namespace is not None:
+            h5py_obj.attrs[H5PRESERVE_ATTR_NAMESPACE] = val._namespace
+        if val._version is not None:
+            h5py_obj.attrs[H5PRESERVE_ATTR_VERSION] = val._version
+        if val._on_demand:
+            h5py_obj.attrs[H5PRESERVE_ATTR_ON_DEMAND] = val._on_demand
+        # pylint: enable=protected-access
+
     def _write_containers_to_file(self, h5py_group, key, val):
         """
         Write instances of ContainerBase to an hdf5 file
         """
-        for item_name, item in val.attrs.items():
-            if not isinstance(item, tuple(H5PY_ATTR_WRITABLE_TYPES)):
-                raise TypeError(ATTR_NOT_DUMPED.format(item_name, item))
-        if isinstance(val, GroupContainer):
-            new_obj = h5py_group.create_group(key)
-            new_obj.attrs.update(val.attrs)
-            if isinstance(val, OnDemandBase):
-                # pylint: disable=protected-access
-                py_obj = val._ref()
-                py_obj._h5preserve_dump = _on_demand_group_dumper_generator(
-                    self, new_obj
-                )
-                py_obj._h5preserve_update()
-                # pylint: enable=protected-access
-            else:
-                for obj_name, obj_val in val.items():
-                    self.to_file(new_obj, obj_name, obj_val)
-        elif isinstance(val, DatasetContainer):
-            new_obj = h5py_group.create_dataset(
-                key, **val
-            )
-            new_obj.attrs.update(val.attrs)
-        # pylint: disable=protected-access
-        if val._label is not None:
-            new_obj.attrs[H5PRESERVE_ATTR_LABEL] = val._label
-        if val._namespace is not None:
-            new_obj.attrs[H5PRESERVE_ATTR_NAMESPACE] = val._namespace
-        if val._version is not None:
-            new_obj.attrs[H5PRESERVE_ATTR_VERSION] = val._version
-        if val._on_demand:
-            new_obj.attrs[H5PRESERVE_ATTR_ON_DEMAND] = val._on_demand
-        # pylint: enable=protected-access
+        if isinstance(val, DelayedContainer):
+            # pylint: disable=protected-access
+            val._set_info(h5group=h5py_group, name=key, registries=self)
+            # pylint: enable=protected-access
+        else:
+            for item_name, item in val.attrs.items():
+                if not isinstance(item, tuple(H5PY_ATTR_WRITABLE_TYPES)):
+                    raise TypeError(ATTR_NOT_DUMPED.format(item_name, item))
+
+            if isinstance(val, GroupContainer):
+                new_obj = self._write_group_to_file(h5py_group, key, val)
+            elif isinstance(val, DatasetContainer):
+                new_obj = self._write_dataset_to_file(h5py_group, key, val)
+
+            self._write_h5preserve_metadata_to_file(new_obj, val)
 
     def dump(self, obj):
         """
@@ -484,6 +511,35 @@ class OnDemandDatasetContainer(DatasetContainer, OnDemandBase):
     demand, rather that loading immediately.
     """
     pass
+
+
+class DelayedContainer(object):
+    # pylint: disable=too-few-public-methods
+    """
+    Helper class for allowing delayed writing of containers to hdf5 files.
+    """
+    def __init__(self):
+        self._h5group = None
+        self._name = None
+        self._registries = None
+
+    def write_container(self, data):
+        """
+        Write `data` to hdf5 file with the associated located of the
+        `DelayedContainer`.
+        """
+        if self._h5group is not None:
+            self._registries.to_file(
+                self._h5group, self._name, self._registries.dump(data)
+            )
+
+    def _set_info(self, h5group, name, registries):
+        """
+        Set the info required for writing to the hdf5 file
+        """
+        self._h5group = h5group
+        self._name = name
+        self._registries = registries
 
 
 class Registry(object):
