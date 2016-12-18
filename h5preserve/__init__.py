@@ -275,7 +275,7 @@ class RegistryContainer(MutableSequence):
 
     def _obj_to_h5preserve(self, obj):
         """convert python object to h5preserve representation"""
-        if isinstance(obj, ContainerBase):
+        if isinstance(obj, (ContainerBase, DelayedContainer)):
             return obj
         val_type = type(obj)
         for registry in self:
