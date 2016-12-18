@@ -7,10 +7,33 @@ Internal utilities for h5preserve
 """
 from collections import namedtuple, Callable
 
+import six
+
+from numpy import issctype, ndarray
+import h5py
+
 H5PRESERVE_ATTR_NAMESPACE = "_h5preserve_namespace"
 H5PRESERVE_ATTR_LABEL = "_h5preserve_label"
 H5PRESERVE_ATTR_VERSION = "_h5preserve_version"
 H5PRESERVE_ATTR_ON_DEMAND = "_h5preserve_on_demand"
+
+EXTERNAL_DUMPED_TYPES = {
+    h5py.Group,
+    h5py.Dataset,
+    h5py.SoftLink,
+    h5py.ExternalLink,
+    ndarray,
+}
+
+H5PY_ATTR_WRITABLE_TYPES = {
+    int,
+    float,
+    list,
+    tuple,
+    ndarray,
+}
+H5PY_ATTR_WRITABLE_TYPES.add(six.text_type)
+H5PY_ATTR_WRITABLE_TYPES.add(six.binary_type)
 
 DumperMap = namedtuple("DumperMap", "label func")
 
@@ -86,3 +109,23 @@ class OnDemandWrapper(Callable):
 
     def __call__(self):
         return self._func()
+
+
+def is_externally_dumped(obj):
+    """
+    Return if `obj` does not need to explicitly dumped.
+    """
+    if isinstance(obj, tuple(EXTERNAL_DUMPED_TYPES)):
+        return True
+    return False
+
+
+def is_attr_writeable(obj):
+    """
+    Return if `obj` can be written as an hdf5 attr
+    """
+    if isinstance(obj, tuple(H5PY_ATTR_WRITABLE_TYPES)):
+        return True
+    elif issctype(type(obj)):
+        return True
+    return False

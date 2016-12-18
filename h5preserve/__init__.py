@@ -12,8 +12,6 @@ from collections import (
 from warnings import warn
 import weakref
 
-import six
-
 from numpy import ndarray
 import h5py
 
@@ -27,6 +25,8 @@ from ._utils import (
     H5PRESERVE_ATTR_LABEL,
     H5PRESERVE_ATTR_VERSION,
     H5PRESERVE_ATTR_ON_DEMAND,
+    is_externally_dumped as _is_externally_dumped,
+    is_attr_writeable as _is_attr_writeable,
 )
 
 # versioneer stuff
@@ -36,27 +36,9 @@ del get_versions
 
 ALLOWED_DATASET_KEYS = {
     "attrs", "shape", "dtype", "data", "chunks", "maxshape", "fillvalue",
-    "size", "compression", "compression_opts", "scaleoffset", "shuffle",
+    "compression", "compression_opts", "scaleoffset", "shuffle",
     "fletcher32", "fillvalue", "track_times",
 }
-
-EXTERNAL_DUMPED_TYPES = {
-    h5py.Group,
-    h5py.Dataset,
-    h5py.SoftLink,
-    h5py.ExternalLink,
-    ndarray,
-}
-
-H5PY_ATTR_WRITABLE_TYPES = {
-    int,
-    float,
-    list,
-    tuple,
-    ndarray,
-}
-H5PY_ATTR_WRITABLE_TYPES.add(six.text_type)
-H5PY_ATTR_WRITABLE_TYPES.add(six.binary_type)
 
 UNKNOWN_NAMESPACE = "Unknown namespace {}."
 UNSUPPORTED_H5PY_TYPE = "Unsupported h5py type {}."
@@ -70,6 +52,7 @@ NO_SUITABLE_LOADER = "Cannot find suitable loader for label {} with version {}"
 INVALID_DATASET_OPTION = "{} is not a valid dataset option."
 NO_PATH = "No path defined for hard link."
 ATTR_NOT_DUMPED = "Attribute {}={} has not been dumped."
+DELAYED_OBJ_NOT_WRITTEN = "{name} has not been written to {group}"
 
 
 class RegistryContainer(MutableSequence):
@@ -88,6 +71,7 @@ class RegistryContainer(MutableSequence):
         self._indexed_registries = []
         if registries:
             self.extend(registries)
+        self._delayed_refs = []
 
     def __getitem__(self, index):
         return self._indexed_registries[index]
@@ -149,7 +133,6 @@ class RegistryContainer(MutableSequence):
                 shape=h5py_obj.shape,
                 fillvalue=h5py_obj.fillvalue,
                 dtype=h5py_obj.dtype,
-                size=h5py_obj.size,
             )
         raise TypeError(UNSUPPORTED_H5PY_TYPE.format(type(h5py_obj)))
 
@@ -166,7 +149,7 @@ class RegistryContainer(MutableSequence):
         val
             the object to add
         """
-        if isinstance(val, ContainerBase):
+        if isinstance(val, (ContainerBase, DelayedContainer)):
             self._write_containers_to_file(h5py_group, key, val)
         elif isinstance(val, HardLink):
             if val.h5py_obj is None:
@@ -238,7 +221,7 @@ class RegistryContainer(MutableSequence):
             # pylint: enable=protected-access
         else:
             for item_name, item in val.attrs.items():
-                if not isinstance(item, tuple(H5PY_ATTR_WRITABLE_TYPES)):
+                if not _is_attr_writeable(item):
                     raise TypeError(ATTR_NOT_DUMPED.format(item_name, item))
 
             if isinstance(val, GroupContainer):
@@ -260,7 +243,7 @@ class RegistryContainer(MutableSequence):
         # pylint: disable=unidiomatic-typecheck
         if isinstance(obj, HardLink):
             return obj
-        elif type(obj) in EXTERNAL_DUMPED_TYPES:
+        elif _is_externally_dumped(obj):
             return obj
         # pylint: enable=unidiomatic-typecheck
         converted_obj = self._obj_to_h5preserve(obj)
@@ -273,9 +256,30 @@ class RegistryContainer(MutableSequence):
                 converted_obj[key] = self.dump(val)
         return converted_obj
 
+    def _add_delayed(self, obj):
+        """
+        Track delayed object for warning
+        """
+        self._delayed_refs.append(weakref.ref(obj))
+
+    def _warn_delayed(self):
+        """
+        Warn if delayed container not written
+        """
+        for ref in self._delayed_refs:
+            delayed_obj = ref()
+            if delayed_obj is not None:
+                warn(DELAYED_OBJ_NOT_WRITTEN.format(
+                    # pylint: disable=protected-access
+                    name=delayed_obj._name, group=delayed_obj._h5group
+                ))
+
     def _obj_to_h5preserve(self, obj):
         """convert python object to h5preserve representation"""
-        if isinstance(obj, (ContainerBase, DelayedContainer)):
+        if isinstance(obj, ContainerBase):
+            return obj
+        elif isinstance(obj, DelayedContainer):
+            self._add_delayed(obj)
             return obj
         val_type = type(obj)
         for registry in self:
@@ -717,6 +721,9 @@ class H5PreserveFile(H5PreserveGroup):
 
     def close(self):
         # pylint: disable=missing-docstring
+        # pylint: disable=protected-access
+        self.registries._warn_delayed()
+        # pylint: enable=protected-access
         self._h5py_file.close()
 
     def __enter__(self):
