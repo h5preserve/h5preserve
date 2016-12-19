@@ -142,3 +142,10 @@ def is_h5py_writable(obj):
     elif isinstance(obj, (ndarray, npnumber)):
         return True
     return False
+
+
+class H5PreserveWarning(Warning):
+    """
+    Warning class for h5preserve
+    """
+    pass

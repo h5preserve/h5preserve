@@ -9,6 +9,7 @@ native python types.
 from collections import (
     MutableMapping, defaultdict, MutableSequence,
 )
+from logging import getLogger
 from warnings import warn
 import weakref
 
@@ -26,13 +27,16 @@ from ._utils import (
     H5PRESERVE_ATTR_ON_DEMAND,
     is_externally_dumped as _is_externally_dumped,
     is_attr_writeable as _is_attr_writeable,
-    is_h5py_writable as _is_h5py_writable
+    is_h5py_writable as _is_h5py_writable,
+    H5PreserveWarning,
 )
 
 # versioneer stuff
 from ._version import get_versions
 __version__ = get_versions()['version']
 del get_versions
+
+log = getLogger(__name__)
 
 ALLOWED_DATASET_KEYS = {
     "attrs", "shape", "dtype", "data", "chunks", "maxshape", "fillvalue",
@@ -53,6 +57,8 @@ INVALID_DATASET_OPTION = "{} is not a valid dataset option."
 NO_PATH = "No path defined for hard link."
 ATTR_NOT_DUMPED = "Attribute {}={} has not been dumped."
 DELAYED_OBJ_NOT_WRITTEN = "{name} has not been written to {group}"
+NUM_DELAYED_REFS = "Number of delayed containers is %s."
+NUM_DELAYED_REFS_ON_CLOSE = "Number of delayed containers on close is %s."
 
 
 class RegistryContainer(MutableSequence):
@@ -71,7 +77,7 @@ class RegistryContainer(MutableSequence):
         self._indexed_registries = []
         if registries:
             self.extend(registries)
-        self._delayed_refs = []
+        self._delayed_refs = set()
 
     def __getitem__(self, index):
         return self._indexed_registries[index]
@@ -106,7 +112,7 @@ class RegistryContainer(MutableSequence):
                 return H5PreserveGroup(h5py_group=h5py_obj, registries=self)
             warn(
                 "No type information about object, returning native h5py"
-                "object"
+                "object.", H5PreserveWarning
             )
             return h5py_obj
         elif namespace in self._registries:
@@ -256,19 +262,25 @@ class RegistryContainer(MutableSequence):
         """
         Track delayed object for warning
         """
-        self._delayed_refs.append(weakref.ref(obj))
+        self._delayed_refs.add(weakref.ref(obj))
+        log.debug(NUM_DELAYED_REFS, len(self._delayed_refs))
 
     def _warn_delayed(self):
         """
         Warn if delayed container not written
         """
-        for ref in self._delayed_refs:
+        log.debug(NUM_DELAYED_REFS_ON_CLOSE, len(self._delayed_refs))
+        for ref in list(self._delayed_refs):
             delayed_obj = ref()
-            if delayed_obj is not None:
+            if delayed_obj is None:
+                self._delayed_refs.discard(ref)
+            elif delayed_obj._written:  # pylint: disable=protected-access
+                self._delayed_refs.discard(ref)
+            else:
                 warn(DELAYED_OBJ_NOT_WRITTEN.format(
                     # pylint: disable=protected-access
                     name=delayed_obj._name, group=delayed_obj._h5group
-                ))
+                ), H5PreserveWarning)
 
     def _obj_to_h5preserve(self, obj):
         """convert python object to h5preserve representation"""
@@ -522,6 +534,7 @@ class DelayedContainer(object):
         self._h5group = None
         self._name = None
         self._registries = None
+        self._written = False
 
     def write_container(self, data):
         """
@@ -532,6 +545,7 @@ class DelayedContainer(object):
             self._registries.to_file(
                 self._h5group, self._name, self._registries.dump(data)
             )
+        self._written = True
 
     def _set_info(self, h5group, name, registries):
         """
