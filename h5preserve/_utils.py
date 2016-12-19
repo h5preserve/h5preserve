@@ -9,7 +9,7 @@ from collections import namedtuple, Callable
 
 import six
 
-from numpy import issctype, ndarray
+from numpy import ndarray, number as npnumber
 import h5py
 
 H5PRESERVE_ATTR_NAMESPACE = "_h5preserve_namespace"
@@ -23,6 +23,7 @@ EXTERNAL_DUMPED_TYPES = {
     h5py.SoftLink,
     h5py.ExternalLink,
     ndarray,
+    npnumber,
 }
 
 H5PY_ATTR_WRITABLE_TYPES = {
@@ -31,6 +32,7 @@ H5PY_ATTR_WRITABLE_TYPES = {
     list,
     tuple,
     ndarray,
+    npnumber,
 }
 H5PY_ATTR_WRITABLE_TYPES.add(six.text_type)
 H5PY_ATTR_WRITABLE_TYPES.add(six.binary_type)
@@ -126,6 +128,15 @@ def is_attr_writeable(obj):
     """
     if isinstance(obj, tuple(H5PY_ATTR_WRITABLE_TYPES)):
         return True
-    elif issctype(type(obj)):
+    return False
+
+
+def is_h5py_writable(obj):
+    """
+    Return if `obj` can be asigned as a member of a hdf5 group
+    """
+    if isinstance(obj, (h5py.SoftLink, h5py.ExternalLink)):
+        return True
+    elif isinstance(obj, (ndarray, npnumber)):
         return True
     return False

@@ -12,7 +12,6 @@ from collections import (
 from warnings import warn
 import weakref
 
-from numpy import ndarray
 import h5py
 
 from ._utils import (
@@ -27,6 +26,7 @@ from ._utils import (
     H5PRESERVE_ATTR_ON_DEMAND,
     is_externally_dumped as _is_externally_dumped,
     is_attr_writeable as _is_attr_writeable,
+    is_h5py_writable as _is_h5py_writable
 )
 
 # versioneer stuff
@@ -156,11 +156,7 @@ class RegistryContainer(MutableSequence):
                 # pylint: disable=protected-access
                 val._set_file(h5py_group.file)
             h5py_group[key] = val.h5py_obj
-        elif isinstance(val, h5py.SoftLink):
-            h5py_group[key] = val
-        elif isinstance(val, h5py.ExternalLink):
-            h5py_group[key] = val
-        elif isinstance(val, ndarray):
+        elif _is_h5py_writable(val):
             h5py_group[key] = val
         else:
             raise TypeError(
