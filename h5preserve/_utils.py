@@ -9,7 +9,7 @@ from collections import namedtuple, Callable
 
 import six
 
-from numpy import ndarray, number as npnumber
+from numpy import ndarray, number as npnumber, bool_ as npbool
 import h5py
 
 H5PRESERVE_ATTR_NAMESPACE = "_h5preserve_namespace"
@@ -31,8 +31,10 @@ H5PY_ATTR_WRITABLE_TYPES = {
     float,
     list,
     tuple,
+    bool,
     ndarray,
     npnumber,
+    npbool,
 }
 H5PY_ATTR_WRITABLE_TYPES.add(six.text_type)
 H5PY_ATTR_WRITABLE_TYPES.add(six.binary_type)

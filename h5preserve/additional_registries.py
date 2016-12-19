@@ -24,6 +24,7 @@ none_python_registry = Registry("Python: None")
 builtin_numbers_registry = Registry("Python: builtin numbers")
 builtin_text_registry = Registry("Python: builtin text")
 sequence_as_dataset_registry = Registry("Python: sequence as dataset")
+bool_python_registry = Registry("Python: bool")
 
 if hasattr(h5py, "Empty"):
     # pylint: disable=missing-docstring,unused-argument,no-member
@@ -41,6 +42,9 @@ builtin_numbers_registry.dumper(float, "float", version=None)(
     as_dataset_dumper
 )
 builtin_numbers_registry.loader("float", version=None)(as_dataset_loader)
+
+bool_python_registry.dumper(bool, "bool", version=None)(as_dataset_dumper)
+bool_python_registry.loader("bool", version=None)(as_dataset_loader)
 
 if six.PY2:
     builtin_text_registry.dumper(str, "ascii", version=None)(
@@ -88,10 +92,12 @@ none_python_registry.freeze()
 builtin_numbers_registry.freeze()
 builtin_text_registry.freeze()
 sequence_as_dataset_registry.freeze()
+bool_python_registry.freeze()
 
 BUILTIN_REGISTRIES = (
     none_python_registry,
     builtin_numbers_registry,
     builtin_text_registry,
     sequence_as_dataset_registry,
+    bool_python_registry,
 )
