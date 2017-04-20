@@ -72,6 +72,7 @@ class RegistryContainer(MutableSequence):
         the list of registries to be associated with this container
     """
     def __init__(self, *registries):
+        # pylint: disable=super-init-not-called
         self._version_lock = {}
         self._registries = {}
         self._indexed_registries = []
@@ -94,9 +95,9 @@ class RegistryContainer(MutableSequence):
     def __len__(self):
         return len(self._registries)
 
-    def insert(self, index, item):
-        self._registries[item.name] = item
-        self._indexed_registries.insert(index, item.name)
+    def insert(self, index, value):
+        self._registries[value.name] = value
+        self._indexed_registries.insert(index, value.name)
 
     def from_file(self, h5py_obj):
         """
@@ -636,6 +637,7 @@ class H5PreserveGroup(MutableMapping):
         file
     """
     def __init__(self, h5py_group, registries):
+        # pylint: disable=super-init-not-called
         self._h5py_group = h5py_group
         self.registries = registries
 
@@ -797,8 +799,7 @@ class HardLink(object):
     def __repr__(self):
         if self._path is not None:
             return "HardLink(path={path})".format(path=self.path)
-        else:
-            return "HardLink(h5py_obj={obj})".format(obj=self.h5py_obj)
+        return "HardLink(h5py_obj={obj})".format(obj=self.h5py_obj)
 
 
 def open(filename, registries, **kwargs):

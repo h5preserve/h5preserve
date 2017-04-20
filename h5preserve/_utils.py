@@ -112,6 +112,7 @@ class OnDemandWrapper(Callable):
         self._func = func
 
     def __call__(self):
+        # pylint: disable=arguments-differ
         return self._func()
 
 
