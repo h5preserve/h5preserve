@@ -109,6 +109,7 @@ class OnDemandWrapper(Callable):
     """
     # pylint: disable=too-few-public-methods
     def __init__(self, func):
+        # pylint: disable=super-init-not-called
         self._func = func
 
     def __call__(self):

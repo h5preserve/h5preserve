@@ -402,6 +402,7 @@ class RegistryContainer(MutableSequence):
 class ContainerBase(MutableMapping):
     # pylint: disable=abstract-method,missing-docstring
     def __init__(self, attrs=None):
+        # pylint: disable=super-init-not-called
         if attrs is None:
             attrs = {}
         self._namespace = attrs.pop(H5PRESERVE_ATTR_NAMESPACE, None)

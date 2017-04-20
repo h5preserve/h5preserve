@@ -10,3 +10,4 @@ recursive-include tests *.py
 include pylintrc
 include tox.ini
 include pypi-intro.rst
+exclude appveyor.yml
