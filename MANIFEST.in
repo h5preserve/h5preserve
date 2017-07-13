@@ -2,11 +2,14 @@ include versioneer.py h5preserve/_version.py
 include DESCRIPTION.rst
 include README.md
 include LICENSE.txt
+include code_of_conduct.md
+include CONTRIBUTING.md
 recursive-include docs *
 recursive-exclude docs/_build *
 include doc-requirements.txt
 include test-requirements.txt
 recursive-include tests *.py
+recursive-include paper *
 include pylintrc
 include tox.ini
 include pypi-intro.rst
