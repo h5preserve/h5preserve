@@ -1,0 +1,23 @@
+{
+  "@context": "https://raw.githubusercontent.com/codemeta/codemeta/master/codemeta.jsonld",
+  "@type": "Code",
+  "author": [
+    {
+      "@id": "0000-0001-6637-6922",
+      "@type": "Person",
+      "email": "james.tocknell@mq.edu.au",
+      "name": "James Tocknell",
+      "affiliation": "Macquarie University"
+    }
+  ],
+  "identifier": "",
+  "codeRepository": "https://h5preserve.readthedocs.io",
+  "datePublished": "2017-07-13",
+  "dateModified": "2017-07-13",
+  "dateCreated": "2017-07-13",
+  "description": "Thin wrapper around h5py, inspired by camel",
+  "keywords": "hdf5",
+  "license": "3-clause BSD",
+  "title": "h5preserve",
+  "version": "v0.14.1"
+}
