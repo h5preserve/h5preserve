@@ -33,6 +33,7 @@ Contents:
     Quickstart
     Usage
     Reference
+    Contributing
 
 
 
