@@ -1,6 +1,6 @@
 [![Documentation Status](https://readthedocs.org/projects/h5preserve/badge/?version=latest)](http://h5preserve.readthedocs.org/en/latest/?badge=latest)
-[![Build Status](https://travis-ci.org/aragilar/h5preserve.svg?branch=master)](https://travis-ci.org/aragilar/h5preserve)
-[![Coverage Status](https://codecov.io/github/aragilar/h5preserve/coverage.svg?branch=master)](https://codecov.io/github/aragilar/h5preserve?branch=master)
+[![Build Status](https://travis-ci.org/h5preserve/h5preserve.svg?branch=master)](https://travis-ci.org/h5preserve/h5preserve)
+[![Coverage Status](https://codecov.io/github/h5preserve/h5preserve/coverage.svg?branch=master)](https://codecov.io/github/h5preserve/h5preserve?branch=master)
 [![Version](https://img.shields.io/pypi/v/h5preserve.svg)](https://pypi.python.org/pypi/h5preserve/)
 [![License](https://img.shields.io/pypi/l/h5preserve.svg)](https://pypi.python.org/pypi/h5preserve/)
 [![Wheel](https://img.shields.io/pypi/wheel/h5preserve.svg)](https://pypi.python.org/pypi/h5preserve/)
@@ -18,4 +18,4 @@ It can be installed via pip, but note that h5py requires a C compiler and the
 hdf5 library.
 
 Bug reports and suggestions should be filed at
-[https://github.com/aragilar/h5preserve/issues](https://github.com/aragilar/h5preserve/issues).
+[https://github.com/h5preserve/h5preserve/issues](https://github.com/h5preserve/h5preserve/issues).
