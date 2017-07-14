@@ -1,3 +1,5 @@
+.. _contributing:
+
 Contributing to h5preserve
 ##########################
 We welcome contributions to h5preserve, subject to our
