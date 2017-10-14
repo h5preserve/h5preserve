@@ -25,7 +25,7 @@ setuptools.setup(
     long_description = long_description,
     license = "3-clause BSD",
     keywords = "hdf5",
-    url = "http://h5preserve.rtfd.org",
+    url = "https://h5preserve.readthedocs.io",
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',

@@ -46,6 +46,6 @@ Indices and tables
 
 .. _h5py: http://www.h5py.org/
 .. _hdf5: https://www.hdfgroup.org/HDF5/
-.. _Camel: http://eev.ee/blog/2015/10/15/dont-use-pickle-use-camel/
-.. _philosophy: http://camel.readthedocs.org/en/latest/camel.html#camel-s-philosophy
+.. _Camel: https://eev.ee/blog/2015/10/15/dont-use-pickle-use-camel/
+.. _philosophy: https://camel.readthedocs.org/en/latest/camel.html#camel-s-philosophy
 .. _pytables: http://www.pytables.org/
