@@ -7,7 +7,7 @@ and the hdf5_ library.
 
 
 .. |Documentation Status| image:: https://readthedocs.org/projects/h5preserve/badge/?version=latest
-   :target: http://h5preserve.readthedocs.org/en/latest/?badge=latest
+   :target: https://h5preserve.readthedocs.org/en/latest/?badge=latest
 .. |Build Status| image:: https://travis-ci.org/h5preserve/h5preserve.svg?branch=master
    :target: https://travis-ci.org/h5preserve/h5preserve
 .. |Coverage Status| image:: https://codecov.io/github/h5preserve/h5preserve/coverage.svg?branch=master
@@ -17,5 +17,5 @@ and the hdf5_ library.
 
 .. _h5py: http://www.h5py.org/
 .. _hdf5: https://www.hdfgroup.org/HDF5/
-.. _camel: http://eev.ee/blog/2015/10/15/dont-use-pickle-use-camel/
+.. _camel: https://eev.ee/blog/2015/10/15/dont-use-pickle-use-camel/
 
