@@ -10,12 +10,12 @@ Assume you have a class which represents some experiment you've run::
             self.data = data
             self.time_started = time_started
 
-where ``data`` is some numpy array containing the experimental data, and
-``time_started`` is a string containing time and data when the experiment was
-started (we're using a string in this case, but it could be an ``datetime``
+where :py:obj:`data` is some numpy array containing the experimental data, and
+:py:obj:`time_started` is a string containing time and data when the experiment was
+started (we're using a string in this case, but it could be an :py:mod:`datetime`
 object from the python standard library, or some other representation of time).
 
-To save an instance of ``Experiment`` to a group in a file, you could do::
+To save an instance of :py:class:`Experiment` to a group in a file, you could do::
 
     grp["MyExperiment"] = experiment.data
     grp["MyExperiment"].attrs["time started"] = experiment.time_started
@@ -39,8 +39,8 @@ which is fine but:
 
 This represents time spent coding up validation code, which has to be tested,
 and so forth. For short scripts, this can become come to dominate the code.
-Instead, using ``h5preserve``, you can write a dump function, and a load
-function, and let ``h5preserve`` deal with the rest. For the above example,
+Instead, using :py:mod:`h5preserve`, you can write a dump function, and a load
+function, and let :py:mod:`h5preserve` deal with the rest. For the above example,
 reading and writing become::
 
     grp["MyExperiment"] = experiment
