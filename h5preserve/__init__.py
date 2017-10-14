@@ -30,6 +30,12 @@ from ._utils import (
     is_h5py_writable as _is_h5py_writable,
     H5PreserveWarning,
 )
+__all__ = [
+    "OnDemandWrapper", "RegistryContainer", "GroupContainer",
+    "OnDemandGroupContainer", "DatasetContainer", "OnDemandDatasetContainer",
+    "DelayedContainer", "Registry", "H5PreserveGroup", "H5PreserveFile",
+    "HardLink", "open", "new_registry_list", "wrap_on_demand",
+]
 
 # versioneer stuff
 from ._version import get_versions
