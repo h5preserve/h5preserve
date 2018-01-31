@@ -12,8 +12,8 @@ and the hdf5_ library.
    :target: https://travis-ci.org/h5preserve/h5preserve
 .. |Coverage Status| image:: https://codecov.io/github/h5preserve/h5preserve/coverage.svg?branch=master
    :target: https://codecov.io/github/h5preserve/h5preserve?branch=master
-.. |DOI| image:: https://zenodo.org/badge/DOI/10.5281/zenodo.229784.svg
-   :target: https://doi.org/10.5281/zenodo.229784
+.. |DOI| image:: https://zenodo.org/badge/DOI/10.5281/zenodo.593007.svg
+   :target: https://doi.org/10.5281/zenodo.593007
 
 .. _h5py: http://www.h5py.org/
 .. _hdf5: https://www.hdfgroup.org/HDF5/
