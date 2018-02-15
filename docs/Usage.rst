@@ -21,10 +21,14 @@ registry collection
     A collection of registries. Deals with choosing the correct registry, dumper
     and loader to use, including version locking.
 
-So a complete example based on the :ref:`quickstart` example is::
+So a complete example based on the :ref:`quickstart` example is:
+
+.. testcode::
 
     import numpy as np
-    from h5preserve import open as h5open, Registry, new_registry_list
+    from h5preserve import (
+        open as h5open, Registry, new_registry_list, DatasetContainer
+    )
 
     registry = Registry("experiment")
 
@@ -35,12 +39,12 @@ So a complete example based on the :ref:`quickstart` example is::
 
     @registry.dumper(Experiment, "Experiment", version=1)
     def _exp_dump(experiment):
-        return {
-            "data": experiment.data,
-            "attrs": {
+        return DatasetContainer(
+            data=experiment.data,
+            attrs={
                 "time started": experiment.time_started
             }
-        }
+        )
 
     @registry.loader("Experiment", version=1)
     def _exp_load(dataset):
@@ -51,16 +55,21 @@ So a complete example based on the :ref:`quickstart` example is::
 
     my_cool_experiment = Experiment(np.array([1,2,3,4,5]), 10)
 
-    with open("my_data_file.hdf5", new_registry_list(registry)) as f:
+    with h5open("my_data_file.hdf5", new_registry_list(registry)) as f:
         f["cool experiment"] = my_cool_experiment
 
-    with open("my_data_file.hdf5", new_registry_list(registry)) as f:
+    with h5open("my_data_file.hdf5", new_registry_list(registry)) as f:
         my_cool_experiment_loaded = f["cool experiment"]
 
     print(
         my_cool_experiment_loaded.time_started ==
         my_cool_experiment.time_started
     )
+
+.. testoutput::
+    :hide:
+
+    True
 
 Whilst for this simple case it's probably overkill to use :py:mod:`h5preserve`, :py:mod:`h5preserve` deals
 quite easily changing requirements, such as adding additional properties to

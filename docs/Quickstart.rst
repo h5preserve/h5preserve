@@ -50,12 +50,12 @@ with our dump function being::
 
     @registry.dumper(Experiment, "Experiment", version=1)
     def _exp_dump(experiment):
-        return {
-            "data": experiment.data,
-            "attrs": {
+        return DatasetContainer(
+            data=experiment.data,
+            attrs={
                 "time started": experiment.time_started
             }
-        }
+        )
 
 and our load function being::
 

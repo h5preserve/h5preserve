@@ -7,8 +7,6 @@ Internal utilities for h5preserve
 """
 from collections import namedtuple, Callable
 
-import six
-
 from numpy import ndarray, number as npnumber, bool_ as npbool
 import h5py
 
@@ -35,9 +33,9 @@ H5PY_ATTR_WRITABLE_TYPES = {
     ndarray,
     npnumber,
     npbool,
+    str,
+    bytes,
 }
-H5PY_ATTR_WRITABLE_TYPES.add(six.text_type)
-H5PY_ATTR_WRITABLE_TYPES.add(six.binary_type)
 
 DumperMap = namedtuple("DumperMap", "label func")
 

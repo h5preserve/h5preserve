@@ -2,8 +2,6 @@
 """
 Additional registries for h5preserve
 """
-import six
-
 from numpy import asarray
 import h5py
 
@@ -46,20 +44,12 @@ builtin_numbers_registry.loader("float", version=None)(as_dataset_loader)
 bool_python_registry.dumper(bool, "bool", version=None)(as_dataset_dumper)
 bool_python_registry.loader("bool", version=None)(as_dataset_loader)
 
-if six.PY2:
-    builtin_text_registry.dumper(str, "ascii", version=None)(
-        as_dataset_dumper
-    )
-    builtin_text_registry.dumper(unicode, "text", version=None)(
-        as_dataset_dumper
-    )
-else:
-    builtin_text_registry.dumper(bytes, "ascii", version=None)(
-        as_dataset_dumper
-    )
-    builtin_text_registry.dumper(str, "text", version=None)(
-        as_dataset_dumper
-    )
+builtin_text_registry.dumper(bytes, "ascii", version=None)(
+    as_dataset_dumper
+)
+builtin_text_registry.dumper(str, "text", version=None)(
+    as_dataset_dumper
+)
 builtin_text_registry.loader("ascii", version=None)(as_dataset_loader)
 builtin_text_registry.loader("text", version=None)(as_dataset_loader)
 
