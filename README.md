@@ -13,8 +13,21 @@
 h5preserve is a thin wrapper around [h5py](http://www.h5py.org/), inspired by
 [camel](http://eev.ee/blog/2015/10/15/dont-use-pickle-use-camel/).
 
-It can be installed via pip, but note that h5py requires a C compiler and the
-hdf5 library.
-
 Bug reports and suggestions should be filed at
 [https://github.com/h5preserve/h5preserve/issues](https://github.com/h5preserve/h5preserve/issues).
+
+# Installing h5preserve
+h5preserve is distributed via [PyPI](https://pypi.org/project/h5preserve/), and
+can be [installed via pip](https://packaging.python.org/tutorials/installing-packages/) with:
+```
+pip install h5preserve
+```
+
+Note that h5preserve uses h5py, which may require a C compiler and the hdf5 library to install. See the
+[h5py installation instructions](http://docs.h5py.org/en/latest/build.html) for more information about
+how to install h5py.
+
+To install a development version of h5preserve, clone this repository and use:
+```
+pip install -e .
+```
