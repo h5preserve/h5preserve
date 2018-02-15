@@ -19,6 +19,7 @@ setuptools.setup(
     install_requires = [
         "h5py",
     ],
+    python_requires = '>=3.4',
     author = "James Tocknell",
     author_email = "aragilar@gmail.com",
     description = "Thin wrapper around h5py, inspired by camel",
@@ -32,12 +33,11 @@ setuptools.setup(
         'Intended Audience :: Science/Research',
         'License :: OSI Approved :: BSD License',
         'Topic :: Scientific/Engineering',
-        'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3 :: Only',
     ],
     cmdclass=versioneer.get_cmdclass(),
 )

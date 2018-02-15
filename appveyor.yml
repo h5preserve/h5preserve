@@ -15,14 +15,6 @@ environment:
     # The list here is complete (excluding Python 2.6, which
     # isn't covered by this document) at the time of writing.
 
-    - PYTHON: "C:\\Python27"
-      TOXENV: "py27"
-      TOXPYTHON: "%PYTHON%\\python.exe"
-
-    - PYTHON: "C:\\Python33"
-      TOXENV: "py33"
-      TOXPYTHON: "%PYTHON%\\python.exe"
-
     - PYTHON: "C:\\Python34"
       TOXENV: "py34"
       TOXPYTHON: "%PYTHON%\\python.exe"
@@ -33,14 +25,6 @@ environment:
 
     - PYTHON: "C:\\Python36"
       TOXENV: "py36"
-      TOXPYTHON: "%PYTHON%\\python.exe"
-
-    - PYTHON: "C:\\Python27-x64"
-      TOXENV: "py27"
-      TOXPYTHON: "%PYTHON%\\python.exe"
-
-    - PYTHON: "C:\\Python33-x64"
-      TOXENV: "py33"
       TOXPYTHON: "%PYTHON%\\python.exe"
 
     - PYTHON: "C:\\Python34-x64"
