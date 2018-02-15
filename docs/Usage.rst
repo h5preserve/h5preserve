@@ -199,20 +199,28 @@ the HDF5 file.
 
     * - Type
       - Encoding
+      - Included by default
     * - :py:obj:`None`
       - :py:class:`h5py.Empty`
+      - True
     * - :py:obj:`int`
       - a dataset
+      - True
     * - :py:obj:`float`
       - a dataset
+      - True
     * - :py:obj:`bool`
       - a dataset
+      - True
     * - :py:obj:`bytes` (py2 :py:obj:`str`)
       - a dataset
+      - True
     * - :py:obj:`unicode` (py3 :py:obj:`str`)
       - a dataset
+      - True
     * - :py:obj:`tuple`
       - a dataset
+      - True
     * - :py:obj:`list`
       - a dataset
-
+      - True
