@@ -27,6 +27,7 @@ env:
   - TOXENV=flake8
   - TOXENV=pylint
   - TOXENV=docs
+  - TOXENV=doctest
   - TOXENV=check-manifest
   #- TOXENV=checkreadme
 matrix:
