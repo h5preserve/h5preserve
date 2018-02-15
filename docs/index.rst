@@ -31,6 +31,7 @@ Contents:
     :maxdepth: 2
 
     Quickstart
+    Installation
     Usage
     Reference
     Contributing
