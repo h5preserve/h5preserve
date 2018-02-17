@@ -125,6 +125,43 @@ should be saved as group/dataset attributes or as groups/datasets (currently
 there is no support for loaders/dumpers that only write group/dataset attributes
 without creating a new group/dataset).
 
+Using :py:class:`~h5preserve.DatasetContainer` and :py:class:`~h5preserve.GroupContainer`
+.........................................................................................
+The :ref:`quickstart` example above used :py:class:`~h5preserve.DatasetContainer`;
+:py:class:`~h5preserve.DatasetContainer` takes keyword arguments which are passed on to
+:py:func:`h5py.Group.create_dataset`, as well as an :py:obj:`attrs` keyword
+argument which is used to set attributes on the associated HDF5 dataset.
+
+:py:class:`~h5preserve.GroupContainer` behaves similar to
+:py:class:`~h5preserve.DatasetContainer`; it
+also takes keyword arguments, as well as an additional :py:obj:`attrs` keyword
+argument. However, these keywords names are used as the name for the subgroup or
+dataset created from the keyword arguments. Modifying the :ref:`quickstart`
+example to have it use a group instead of a dataset is simple, we just change
+the loader as shown below::
+
+    @registry.dumper(Experiment, "Experiment", version=1)
+    def _exp_dump(experiment):
+        return GroupContainer(
+            experiment_data=experiment.data,
+            attrs={
+                "time started": experiment.time_started
+            }
+        )
+
+The start time is now written to an attribute on the HDF5 group, and
+:py:obj:`experiment.data` is written to either a dataset or group, depending on
+what type it is. If it was as above a numpy array, then it would be written as a
+dataset (but it would not have :py:obj:`"time started"` as an attribute).
+Loading from a group is the same as loading from a dataset::
+
+    @registry.loader("Experiment", version=1)
+    def _exp_load(group):
+        return Experiment(
+            data=group["experiment_data"],
+            time_started=group["attrs"]["time started"]
+        )
+
 Using On-Demand Loading
 -----------------------
 The purpose of on-demand loading is to deal with cases where recursively loading
@@ -233,3 +270,22 @@ the HDF5 file.
     * - :py:obj:`list`
       - a dataset
       - True
+
+Manually Creating the Registry Container
+........................................
+To create the Registry Container manually, replace all calls to
+:py:func:`~h5preserve.new_registry_list` with :py:class:`~h5preserve.RegistryContainer`.
+This will allow you to select which built-in registries (if any) you which to
+use. For example, if you only want to convert :py:obj:`None` to
+:py:class:`h5py.Empty`, you would do::
+
+    from h5preserve import Registry, RegistryContainer
+    from h5preserve.additional_registries import none_python_registry
+
+    registry = Registry("my cool registry")
+
+    registries = RegistryContainer(registry, none_python_registry)
+
+You could then pass :py:obj:`registries` to :py:obj:`h5preserve.open`, or lock
+to a specific version, or anything else you'd do after calling
+:py:func:`~h5preserve.new_registry_list`.
