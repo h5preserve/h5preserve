@@ -105,6 +105,78 @@ uses when :py:obj:`None` is available. It may be better to have a dumper with an
 version and use a loader with a version of :py:obj:`all`, which can be modified at the
 python level, and not require modification of the existing file.
 
+A versioning example
+....................
+Imagine a class like :py:class:`Experiment` above; you have some data, and some
+metadata (to keep the example simple, we're only going to have one piece of
+metadata, and no data)::
+
+    class ModelOutput:
+        def __init__(self, a):
+            self.a = a
+
+:py:obj:`a` represents some input parameter to our model. We also write the
+associated dumper and loader::
+
+    @registry.dumper(ModelOutput, "ModelOutput", version=1)
+    def _exp_dump(modeloutput):
+        return DatasetContainer(
+            attrs={
+                "a": modeloutput.a
+            }
+        )
+
+    @registry.loader("ModelOutput", version=1)
+    def _exp_load(dataset):
+        return ModelOutput(
+            a=dataset["attrs"]["a"]
+        )
+
+However, later on we realise we should have used :py:obj:`b` instead of
+:py:obj:`a`. This could be because we want to radians instead of degrees,
+using :py:obj:`b` is more meaningful in the model, or some other reason we
+have, something which motivates a change to the class. We change our class::
+
+    class ModelOutput:
+        def __init__(self, b):
+            self.b = b
+
+and create a new dumper and loader for version 2 of this class::
+
+    @registry.dumper(ModelOutput, "ModelOutput", version=2)
+    def _exp_dump(modeloutput):
+        return DatasetContainer(
+            attrs={
+                "b": modeloutput.b
+            }
+        )
+
+    @registry.loader("ModelOutput", version=2)
+    def _exp_load(dataset):
+        return ModelOutput(
+            b=dataset["attrs"]["b"]
+        )
+
+But then, how do we load our old data? Let's assume that :math:`b = 2 a`. So
+we'd write a loader for version 1 which converts :py:obj:`a` to :py:obj:`b`::
+
+    @registry.loader("ModelOutput", version=1)
+    def _exp_load(dataset):
+        return ModelOutput(
+            b = 2 * dataset["attrs"]["a"]
+        )
+
+What about a dumper? We can write one also, but it may be that we add additional
+metadata instead of changing its representation, so we can't store all our
+metadata in the version 1 format, so we can't write a dumper for version 1.
+
+One thing :py:mod:`h5preserve` cannot do is check that your code is forward or
+backwards compatible between different versions, that has to be managed by the
+user (there's some code on providing some tools to help with automated testing
+of loaders and dumpers being written, but that will still require having
+something to test against).
+
+
 Locking Dumper Version
 ......................
 It is possible to force which dumper version is going to used, via
