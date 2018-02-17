@@ -26,7 +26,7 @@ python libraries most similar to h5preserve are
 
 # Origin of h5preserve
 h5preserve was created by the author after two previous attempts to write libraries
-which would allow easy addition of new and changed data structures produce by some
+which would allow easy addition of new and changed data structures produced by some
 modelling and visualisation code he wrote for his thesis (both of which failed
 due to evolving complexity). Inspired by
 [Camel](https://camel.readthedocs.io/) [@eevee_lexy_munroe_camel],
@@ -37,7 +37,7 @@ of in-memory datasets.
 # Why use h5preserve
 The security flaws in pickle are well known (these are explicitly called out at the very
 top of the [pickle](https://docs.python.org/3/library/pickle.html)
-documentation in a big red warning) and design flaws in pickle have brought up in
+documentation in a big red warning) and design flaws in pickle have been brought up in
 both PyCon talks [@alex_gaynor_pickles_2014] and blog posts [@lexy_munroe_dont_2015]
 by well known members of the Python community, which inspired the creation of
 [Camel](https://camel.readthedocs.io/) [@eevee_lexy_munroe_camel]. camel uses
