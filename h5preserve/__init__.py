@@ -68,6 +68,7 @@ NUM_DELAYED_REFS_ON_CLOSE = "Number of delayed containers on close is %s."
 
 
 class RegistryContainer(MutableSequence):
+    # pylint: disable=too-many-ancestors
     """
     Ordered container of registries which manages interaction with the hdf5
     file.
@@ -122,7 +123,7 @@ class RegistryContainer(MutableSequence):
                 "object.", H5PreserveWarning
             )
             return h5py_obj
-        elif namespace in self._registries:
+        if namespace in self._registries:
             return self._h5py_to_h5preserve(h5py_obj)
         raise RuntimeError(UNKNOWN_NAMESPACE.format(namespace))
 
@@ -137,7 +138,7 @@ class RegistryContainer(MutableSequence):
                     h5py_obj, attrs, self, load_on_demand=load_on_demand
                 )
             )
-        elif isinstance(h5py_obj, h5py.Dataset):
+        if isinstance(h5py_obj, h5py.Dataset):
             return DatasetContainer(
                 attrs,
                 data=_get_dataset_data(
@@ -252,7 +253,7 @@ class RegistryContainer(MutableSequence):
         # pylint: disable=unidiomatic-typecheck
         if isinstance(obj, HardLink):
             return obj
-        elif _is_externally_dumped(obj):
+        if _is_externally_dumped(obj):
             return obj
         # pylint: enable=unidiomatic-typecheck
         converted_obj = self._obj_to_h5preserve(obj)
@@ -293,7 +294,7 @@ class RegistryContainer(MutableSequence):
         """convert python object to h5preserve representation"""
         if isinstance(obj, ContainerBase):
             return obj
-        elif isinstance(obj, DelayedContainer):
+        if isinstance(obj, DelayedContainer):
             self._add_delayed(obj)
             return obj
         val_type = type(obj)
@@ -343,7 +344,7 @@ class RegistryContainer(MutableSequence):
         """
         if isinstance(obj, OnDemandWrapper):
             return obj
-        elif not isinstance(obj, ContainerBase):
+        if not isinstance(obj, ContainerBase):
             raise TypeError(NOT_LOADABLE.format(type(obj)))
 
         if isinstance(obj, GroupContainer):
@@ -361,7 +362,7 @@ class RegistryContainer(MutableSequence):
         # pylint: disable=protected-access
         if obj._namespace is None:
             return obj
-        elif obj._namespace not in self:
+        if obj._namespace not in self:
             raise RuntimeError(UNKNOWN_NAMESPACE.format(obj._namespace))
         # pylint: enable=protected-access
 
@@ -380,9 +381,9 @@ class RegistryContainer(MutableSequence):
         loaders = loaders[obj._label]
         if obj._version is None and None in loaders:
             return loaders[None]
-        elif all in loaders:
+        if all in loaders:
             return loaders[all]
-        elif obj._version in loaders:
+        if obj._version in loaders:
             return loaders[obj._version]
         try:
             return loaders[any]
@@ -419,6 +420,7 @@ class ContainerBase(MutableMapping):
 
 
 class OnDemandBase(ContainerBase):
+    # pylint: disable=too-many-ancestors
     # pylint: disable=abstract-method,missing-docstring
     def __init__(self, attrs=None):
         self._ref = None
@@ -427,6 +429,7 @@ class OnDemandBase(ContainerBase):
 
 
 class GroupContainer(ContainerBase):
+    # pylint: disable=too-many-ancestors
     """
     Representation of an hdf5 group for use in h5preserve.
 
@@ -478,6 +481,7 @@ class OnDemandGroupContainer(GroupContainer, OnDemandBase):
 
 
 class DatasetContainer(ContainerBase):
+    # pylint: disable=too-many-ancestors
     """
     Representation of an hdf5 dataset for use in h5preserve.
 
@@ -533,7 +537,7 @@ class OnDemandDatasetContainer(DatasetContainer, OnDemandBase):
     pass
 
 
-class DelayedContainer(object):
+class DelayedContainer:
     # pylint: disable=too-few-public-methods
     """
     Helper class for allowing delayed writing of containers to hdf5 files.
@@ -564,7 +568,7 @@ class DelayedContainer(object):
         self._registries = registries
 
 
-class Registry(object):
+class Registry:
     """
     Register of functions for converting between hdf5 and python.
 
@@ -716,6 +720,7 @@ class H5PreserveGroup(MutableMapping):
 
 
 class H5PreserveFile(H5PreserveGroup):
+    # pylint: disable=too-many-ancestors
     """
     Thin wrapper around ``h5py.File`` to automatically use h5preserve when
     accessing the file contents.
@@ -760,7 +765,7 @@ class H5PreserveFile(H5PreserveGroup):
         return self._h5py_file
 
 
-class HardLink(object):
+class HardLink:
     # pylint: disable=too-few-public-methods
     """
     Represent a h5py hard link to be created via h5preserve.
