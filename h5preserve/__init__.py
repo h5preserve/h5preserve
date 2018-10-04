@@ -106,6 +106,13 @@ class RegistryContainer(MutableSequence):
         self._registries[value.name] = value
         self._indexed_registries.insert(index, value.name)
 
+    @property
+    def registries(self):
+        """
+        Iterator over the registries contained in the order they were added.
+        """
+        return (self._registries[name] for name in self)
+
     def from_file(self, h5py_obj):
         """
         Return an representation of a hdf5 object from a hdf5 file
