@@ -91,6 +91,10 @@ class RegistryContainer(MutableSequence):
         return self._indexed_registries[index]
 
     def __setitem__(self, index, item):
+        if item.name in self._registries:
+            warn("Registry with existing name {} is being registered.".format(
+                item.name
+            ))
         self._indexed_registries[index] = item.name
         self._registries[item.name] = item
 
@@ -105,6 +109,13 @@ class RegistryContainer(MutableSequence):
     def insert(self, index, value):
         self._registries[value.name] = value
         self._indexed_registries.insert(index, value.name)
+
+    def __add__(self, other):
+        if hasattr(other, "registries"):
+            new_registry_container = RegistryContainer(self.registries)
+            new_registry_container.extend(other.registries)
+            return new_registry_container
+        return NotImplemented
 
     @property
     def registries(self):
