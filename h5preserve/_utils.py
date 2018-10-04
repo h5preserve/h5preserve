@@ -139,7 +139,7 @@ def is_h5py_writable(obj):
     """
     if isinstance(obj, (h5py.SoftLink, h5py.ExternalLink)):
         return True
-    elif isinstance(obj, (ndarray, npnumber)):
+    if isinstance(obj, (ndarray, npnumber)):
         return True
     return False
 
