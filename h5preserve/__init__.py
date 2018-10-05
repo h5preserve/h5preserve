@@ -112,7 +112,7 @@ class RegistryContainer(MutableSequence):
 
     def __add__(self, other):
         if hasattr(other, "registries"):
-            new_registry_container = RegistryContainer(self.registries)
+            new_registry_container = RegistryContainer(*self.registries)
             new_registry_container.extend(other.registries)
             return new_registry_container
         return NotImplemented

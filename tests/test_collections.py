@@ -1,5 +1,7 @@
 import pytest
 
+from h5preserve import new_registry_list
+
 class MappingTestingClass(object):
     def test_getitem(self):
         raise NotImplementedError("Missing __getitem__ test")
@@ -43,3 +45,12 @@ class TestDatasetContainer(MutableMappingTestingClass):
 @pytest.mark.xfail
 class TestH5PreserveGroup(MutableMappingTestingClass):
     pass
+
+def test_add_registries():
+    registries1 = new_registry_list()
+    registries2 = new_registry_list()
+    summed_registries = registries1 + registries2
+    assert len([r for r in summed_registries.registries]) == (
+        len([r for r in registries1.registries]) +
+        len([r for r in registries2.registries])
+    )
