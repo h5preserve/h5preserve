@@ -35,13 +35,14 @@ Making a release
 Current minimal working method (this doesn't produce a release commit, deal
 with DOIs needing to be preregistered, not automated, not signed etc.):
 
-#. Checkout the latest commit on the `master` branch on the main repository
-   locally. Ensure the work directory is clean (`git purge`/`git clean -xfd`).
-#. Tag this commit with an annotated tag, with the format being `v*.*.*`
-   (`git tag -a v*.*.*`; I should sign these...). The tag should mention the
+#. Checkout the latest commit on the ``master`` branch on the main repository
+   locally. Ensure the work directory is clean
+   (``git purge``/``git clean -xfd``).
+#. Tag this commit with an annotated tag, with the format being ``v*.*.*``
+   (``git tag -a v*.*.*``; I should sign these...). The tag should mention the
    changes in this release.
 #. Push tag to github.
 #. Create a release on github using the web interface, copying the content of
    the tag.
-#. Build sdist and wheel (`python setup.py sdist bdist_wheel`), and upload to
-   PyPI (`twine upload dist/*`).
+#. Build sdist and wheel (``python setup.py sdist bdist_wheel``), and upload to
+   PyPI (``twine upload dist/*``).
