@@ -27,6 +27,11 @@ setuptools.setup(
     license = "3-clause BSD",
     keywords = "hdf5",
     url = "https://h5preserve.readthedocs.io",
+    project_urls={
+        'Documentation': 'https://h5preserve.readthedocs.io',
+        'Source': 'https://github.com/h5preserve/h5preserve/',
+        'Tracker': 'https://github.com/h5preserve/h5preserve/issues',
+    },
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
