@@ -377,6 +377,20 @@ def experiment_data():
     )
 
 @pytest.fixture
+def experiment_list_data():
+    return Experiment(
+        data=list(np.random.rand(100)),
+        time_started="1970-01-01 00:00:00"
+    )
+
+@pytest.fixture
+def experiment_tuple_data():
+    return Experiment(
+        data=tuple(np.random.rand(100)),
+        time_started="1970-01-01 00:00:00"
+    )
+
+@pytest.fixture
 def on_demand_experiment_data():
     return OnDemandExperiment(
         data=np.random.rand(100),
@@ -766,6 +780,8 @@ def run_data():
 
 @pytest.fixture(params=[
     (experiment_registry(), experiment_data()),
+    (experiment_registry(), experiment_list_data()),
+    (experiment_registry(), experiment_tuple_data()),
     (experiment_registry_as_group(), experiment_data()),
     (experiment_registry_as_on_demand_group(), on_demand_experiment_data()),
     (frozen_experiment_registry(), experiment_data()),
