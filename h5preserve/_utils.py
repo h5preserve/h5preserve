@@ -5,7 +5,8 @@ Internal utilities for h5preserve
 :copyright: (c) 2016 James Tocknell
 :license: 3-clause BSD
 """
-from collections import namedtuple, Callable
+from collections import namedtuple
+from collections.abc import Callable
 
 from numpy import ndarray, number as npnumber, bool_ as npbool
 import h5py

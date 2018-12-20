@@ -6,9 +6,8 @@ native python types.
 :copyright: (c) 2016 James Tocknell
 :license: 3-clause BSD
 """
-from collections import (
-    MutableMapping, defaultdict, MutableSequence,
-)
+from collections import defaultdict
+from collections.abc import MutableMapping, MutableSequence
 from logging import getLogger
 from warnings import warn
 import weakref

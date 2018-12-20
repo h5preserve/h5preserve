@@ -1,4 +1,7 @@
+dist: xenial
+
 language: python
+
 branches:
   only:
     # This is where pull requests from "bors r+" are built.
@@ -7,13 +10,6 @@ branches:
     - trying
     # Uncomment this to enable building pull requests.
     - master
-
-addons:
-  apt:
-    packages:
-      - libhdf5-serial-dev # for h5py
-
-sudo: false
 
 cache:
   directories:
@@ -30,22 +26,25 @@ matrix:
     - python: 3.6
       env:
       - TOXENV=py36
-    - python: 3.5
+    - python: 3.7
+      env:
+      - TOXENV=py37
+    - python: 3.7
       env:
       - TOXENV=flake8
-    - python: 3.5
+    - python: 3.7
       env:
       - TOXENV=pylint
-    - python: 3.5
+    - python: 3.7
       env:
       - TOXENV=docs
-    - python: 3.5
+    - python: 3.7
       env:
       - TOXENV=doctest
-    - python: 3.5
+    - python: 3.7
       env:
       - TOXENV=check-manifest
-    - python: 3.5
+    - python: 3.7
       env:
       - TOXENV=checkreadme
 
