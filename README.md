@@ -9,6 +9,7 @@
 [![Supported implemntations](https://img.shields.io/pypi/implementation/h5preserve.svg)](https://pypi.python.org/pypi/h5preserve/)
 [![PyPI](https://img.shields.io/pypi/status/h5preserve.svg)](https://pypi.python.org/pypi/h5preserve/)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.593007.svg)](https://doi.org/10.5281/zenodo.593007)
+[![Paper](http://joss.theoj.org/papers/10.21105/joss.00581/status.svg)](https://doi.org/10.21105/joss.00581)
 
 h5preserve is a thin wrapper around [h5py](http://www.h5py.org/), inspired by
 [camel](http://eev.ee/blog/2015/10/15/dont-use-pickle-use-camel/).
