@@ -24,6 +24,13 @@ The name comes from the "h5" label associated with hdf5_, and the idea of
 preserving or pickling data.
 
 
+Citing h5preserve
+-----------------
+If you find h5preserve useful in your research, please cite the `JOSS paper`_,
+as well as h5preserve's dependencies, h5py_, numpy_ and hdf5_. Further
+information about citing h5preserve, including specific releases, can be found
+at :ref:`citing`.
+
 
 Contents:
 
@@ -35,6 +42,7 @@ Contents:
     Usage
     Reference
     Contributing
+    Citing
 
 
 
@@ -50,3 +58,5 @@ Indices and tables
 .. _Camel: https://eev.ee/release/2015/10/15/dont-use-pickle-use-camel/
 .. _philosophy: https://camel.readthedocs.io/en/latest/camel.html#camel-s-philosophy
 .. _pytables: http://www.pytables.org/
+.. _`JOSS Paper`: http://joss.theoj.org/papers/10.21105/joss.00581/
+.. _numpy: https://www.numpy.org/
