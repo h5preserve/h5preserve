@@ -831,7 +831,7 @@ class HardLink:
         return "HardLink(h5py_obj={obj})".format(obj=self.h5py_obj)
 
 
-def open(filename, registries, **kwargs):
+def open(filename, registries, *, mode, **kwargs):
     """
     Open a hdf5 file wrapped with h5preserve.
 
@@ -844,7 +844,7 @@ def open(filename, registries, **kwargs):
     **kwargs
         additional keyword arguments to pass to ``h5py.File``
     """
-    return H5PreserveFile(h5py.File(filename, **kwargs), registries)
+    return H5PreserveFile(h5py.File(filename, mode=mode, **kwargs), registries)
 
 
 def new_registry_list(*registries):
