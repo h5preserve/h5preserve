@@ -21,6 +21,18 @@ from h5preserve.additional_registries import (
 )
 
 
+### Tooling for fixture generation
+class FixWrapper:
+    def __init__(self, fix):
+        self.fix = fix
+
+
+def get_fixture_val(fix, request):
+    if isinstance(fix, FixWrapper):
+        return request.getfixturevalue(fix.fix)
+    return fix
+
+
 ### Classes for testng ###
 class Experiment(object):
     def __init__(self, data, time_started):
@@ -182,8 +194,8 @@ def empty_registry():
     return Registry("empty registry")
 
 @pytest.fixture
-def frozen_empty_registry():
-    registry = empty_registry()
+def frozen_empty_registry(empty_registry):
+    registry = empty_registry
     registry.freeze()
     return registry
 
@@ -364,8 +376,8 @@ def no_loader_experiment_registry():
     return registry
 
 @pytest.fixture
-def frozen_experiment_registry():
-    registry = experiment_registry()
+def frozen_experiment_registry(experiment_registry):
+    registry = experiment_registry
     registry.freeze()
     return registry
 
@@ -754,7 +766,7 @@ def initial_conditions_data():
     )
 
 @pytest.fixture
-def solution_data():
+def solution_data(internal_data_data, initial_conditions_data):
     return Solution(
         flag = 0,
         coordinate_system = "some thing",
@@ -762,68 +774,68 @@ def solution_data():
         solution = np.random.rand(5, 2),
         t_roots = np.random.rand(3),
         y_roots = np.random.rand(3,2),
-        internal_data = internal_data_data(),
-        initial_conditions = initial_conditions_data(),
+        internal_data = internal_data_data,
+        initial_conditions = initial_conditions_data,
     )
 
 @pytest.fixture
-def solutions_data():
+def solutions_data(request):
     return Solutions(**{
-        str(i): solution_data() for i in range(2)
+        str(i): request.getfixturevalue("solution_data") for i in range(2)
     })
 
 @pytest.fixture
-def run_data():
-    run = Run(solutions=solutions_data())
-    run.final_solution = solution_data()
+def run_data(solutions_data, solution_data):
+    run = Run(solutions=solutions_data)
+    run.final_solution = solution_data
     return run
 
 @pytest.fixture(params=[
-    (experiment_registry(), experiment_data()),
-    (experiment_registry(), experiment_list_data()),
-    (experiment_registry(), experiment_tuple_data()),
-    (experiment_registry_as_group(), experiment_data()),
-    (experiment_registry_as_on_demand_group(), on_demand_experiment_data()),
-    (frozen_experiment_registry(), experiment_data()),
-    (None_version_experiment_registry(), experiment_data()),
-    (solution_registry(), internal_data_data()),
-    (solution_registry(), initial_conditions_data()),
-    (solution_registry(), solution_data()),
-    (solutions_registry(), solutions_data()),
-    (run_registry(), run_data()),
+    (FixWrapper("experiment_registry"), FixWrapper("experiment_data")),
+    (FixWrapper("experiment_registry"), FixWrapper("experiment_list_data")),
+    (FixWrapper("experiment_registry"), FixWrapper("experiment_tuple_data")),
+    (FixWrapper("experiment_registry_as_group"), FixWrapper("experiment_data")),
+    (FixWrapper("experiment_registry_as_on_demand_group"), FixWrapper("on_demand_experiment_data")),
+    (FixWrapper("frozen_experiment_registry"), FixWrapper("experiment_data")),
+    (FixWrapper("None_version_experiment_registry"), FixWrapper("experiment_data")),
+    (FixWrapper("solution_registry"), FixWrapper("internal_data_data")),
+    (FixWrapper("solution_registry"), FixWrapper("initial_conditions_data")),
+    (FixWrapper("solution_registry"), FixWrapper("solution_data")),
+    (FixWrapper("solutions_registry"), FixWrapper("solutions_data")),
+    (FixWrapper("run_registry"), FixWrapper("run_data")),
     (builtin_numbers_registry, 1),
     (builtin_numbers_registry, 1.0),
     (builtin_text_registry, b"abcd"),
     (builtin_text_registry, u"abcd"),
-    (experiment_experiments_registry(), multi_experiment_data()),
+    (FixWrapper("experiment_experiments_registry"), FixWrapper("multi_experiment_data")),
 ])
 def obj_registry(request):
     return {
-        "registries": RegistryContainer(request.param[0]),
-        "dumpable_object": request.param[1]
+        "registries": RegistryContainer(get_fixture_val(request.param[0], request)),
+        "dumpable_object": get_fixture_val(request.param[1], request)
     }
 
 @pytest.fixture(params=[
-    (experiment_registry(), experiment_data()),
-    (experiment_registry_as_on_demand_group(), on_demand_experiment_data()),
-    (frozen_experiment_registry(), experiment_data()),
-    (None_version_experiment_registry(), experiment_data()),
-    (solution_registry(), internal_data_data()),
-    (solution_registry(), initial_conditions_data()),
-    (solution_registry(), solution_data()),
+    (FixWrapper("experiment_registry"), FixWrapper("experiment_data")),
+    (FixWrapper("experiment_registry_as_on_demand_group"), FixWrapper("on_demand_experiment_data")),
+    (FixWrapper("frozen_experiment_registry"), FixWrapper("experiment_data")),
+    (FixWrapper("None_version_experiment_registry"), FixWrapper("experiment_data")),
+    (FixWrapper("solution_registry"), FixWrapper("internal_data_data")),
+    (FixWrapper("solution_registry"), FixWrapper("initial_conditions_data")),
+    (FixWrapper("solution_registry"), FixWrapper("solution_data")),
     (builtin_numbers_registry, 1),
     (builtin_numbers_registry, 1.0),
-    (frozen_empty_registry(), 1),
-    (frozen_empty_registry(), 1.0),
+    (FixWrapper("frozen_empty_registry"), 1),
+    (FixWrapper("frozen_empty_registry"), 1.0),
     (builtin_text_registry, b"abcd"),
     (builtin_text_registry, u"abcd"),
-    (frozen_empty_registry(), b"abcd"),
-    (frozen_empty_registry(), u"abcd"),
+    (FixWrapper("frozen_empty_registry"), b"abcd"),
+    (FixWrapper("frozen_empty_registry"), u"abcd"),
 ])
 def obj_registry_with_defaults(request):
     return {
-        "registries": new_registry_list(request.param[0]),
-        "dumpable_object": request.param[1]
+        "registries": new_registry_list(get_fixture_val(request.param[0], request)),
+        "dumpable_object": get_fixture_val(request.param[1], request)
     }
 
 if hasattr(h5py, "Empty"):
@@ -834,17 +846,17 @@ if hasattr(h5py, "Empty"):
     def obj_registry_with_none(request):
         return {
             "registries": RegistryContainer(request.param[0]),
-            "dumpable_object": request.param[1]
+            "dumpable_object": get_fixture_val(request.param[1], request)
         }
 
     @pytest.fixture(params=[
         (none_python_registry, None),
-        (frozen_empty_registry(), None),
+        (FixWrapper("frozen_empty_registry"), None),
     ])
     def obj_registry_with_none_with_defaults(request):
         return {
-            "registries": new_registry_list(request.param[0]),
-            "dumpable_object": request.param[1]
+            "registries": new_registry_list(get_fixture_val(request.param[0], request)),
+            "dumpable_object": get_fixture_val(request.param[1], request)
         }
 
 @pytest.fixture
