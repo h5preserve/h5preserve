@@ -55,7 +55,7 @@ So a complete example based on the :ref:`quickstart` example is:
 
     my_cool_experiment = Experiment(np.array([1,2,3,4,5]), 10)
 
-    with h5open("my_data_file.hdf5", new_registry_list(registry), mode='x') as f:
+    with h5open("my_data_file.hdf5", new_registry_list(registry), mode='w') as f:
         f["cool experiment"] = my_cool_experiment
 
     with h5open("my_data_file.hdf5", new_registry_list(registry), mode='r') as f:
