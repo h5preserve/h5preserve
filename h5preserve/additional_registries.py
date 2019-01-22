@@ -42,7 +42,9 @@ builtin_numbers_registry.dumper(float, "float", version=None)(
 builtin_numbers_registry.loader("float", version=None)(as_dataset_loader)
 
 bool_python_registry.dumper(bool, "bool", version=None)(as_dataset_dumper)
-bool_python_registry.loader("bool", version=None)(as_dataset_loader)
+bool_python_registry.loader("bool", version=None)(
+    lambda dataset: bool(as_dataset_loader(dataset))
+)
 
 builtin_text_registry.dumper(bytes, "ascii", version=None)(
     as_dataset_dumper
