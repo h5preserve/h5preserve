@@ -8,6 +8,7 @@ recursive-include docs *
 recursive-exclude docs/_build *
 include doc-requirements.txt
 include test-requirements.txt
+include pylint-requirements.txt
 recursive-include tests *.py
 recursive-include paper *
 include pylintrc
