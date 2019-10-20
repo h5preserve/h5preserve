@@ -10,10 +10,6 @@ branches:
 environment:
   matrix:
 
-    - PYTHON: "C:\\Python34"
-      TOXENV: "py34"
-      TOXPYTHON: "%PYTHON%\\python.exe"
-
     - PYTHON: "C:\\Python35"
       TOXENV: "py35"
       TOXPYTHON: "%PYTHON%\\python.exe"
@@ -22,8 +18,12 @@ environment:
       TOXENV: "py36"
       TOXPYTHON: "%PYTHON%\\python.exe"
 
-    - PYTHON: "C:\\Python34-x64"
-      TOXENV: "py34"
+    - PYTHON: "C:\\Python37"
+      TOXENV: "py37"
+      TOXPYTHON: "%PYTHON%\\python.exe"
+
+    - PYTHON: "C:\\Python37"
+      TOXENV: "py38"
       TOXPYTHON: "%PYTHON%\\python.exe"
 
     - PYTHON: "C:\\Python35-x64"
@@ -34,19 +34,27 @@ environment:
       TOXENV: "py36"
       TOXPYTHON: "%PYTHON%\\python.exe"
 
+    - PYTHON: "C:\\Python37-x64"
+      TOXENV: "py37"
+      TOXPYTHON: "%PYTHON%\\python.exe"
+
+    - PYTHON: "C:\\Python37-x64"
+      TOXENV: "py38"
+      TOXPYTHON: "%PYTHON%\\python.exe"
+
 install:
   # We need wheel installed to build wheels
   - "%PYTHON%\\python.exe -m pip install --upgrade wheel pip setuptools"
-  - "py -3.5 -m pip install --upgrade wheel pip setuptools"
-  - "py -3.5 -m pip install tox codecov"
+  - "py -3.7 -m pip install --upgrade wheel pip setuptools"
+  - "py -3.7 -m pip install tox codecov"
 
 build: off
 
 test_script:
-  - "py -3.5 -m tox"
+  - "py -3.7 -m tox"
 
 cache:
   - "%LOCALAPPDATA%\\pip\\Cache"
 
 on_success:
-  - "py -3.5 -m codecov"
+  - "py -3.7 -m codecov"
