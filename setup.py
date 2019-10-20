@@ -15,7 +15,8 @@ long_description = "\n".join(long_description)
 setuptools.setup(
     name = "h5preserve",
     version = versioneer.get_version(),
-    packages = setuptools.find_packages(),
+    packages = setuptools.find_packages('src'),
+    package_dir = {'': 'src'},
     install_requires = [
         "h5py",
     ],
