@@ -856,6 +856,7 @@ def new_registry_list(*registries):
     *registries : list of Registry
         the list of registries to be associated with this container
     """
+    # pylint: disable=import-outside-toplevel
     from .additional_registries import BUILTIN_REGISTRIES
     r = BUILTIN_REGISTRIES + registries
     return RegistryContainer(
