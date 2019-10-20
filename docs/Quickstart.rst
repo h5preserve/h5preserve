@@ -3,7 +3,16 @@
 Quickstart
 ==========
 
-Assume you have a class which represents some experiment you've run::
+.. invisible-code-block: python
+
+    import numpy as np
+    from h5py import File
+    from h5preserve import Registry
+    grp = File(tmpdir / "h5py.hdf5", 'w')
+
+Assume you have a class which represents some experiment you've run:
+
+.. code-block:: python
 
     class Experiment:
         def __init__(self, data, time_started):
@@ -15,14 +24,26 @@ where :py:obj:`data` is some numpy array containing the experimental data, and
 started (we're using a string in this case, but it could be an :py:mod:`datetime`
 object from the python standard library, or some other representation of time).
 
-To save an instance of :py:class:`Experiment` to a group in a file, you could do::
+To save an instance of :py:class:`Experiment` to a group in a file, you could do:
+
+.. code-block:: python
+
+    experiment = Experiment(
+        data=np.linspace(2e6, 5e6, 1000),
+        time_started="2019-01-01T00:00:00.000000+00:00",
+    )
 
     grp["MyExperiment"] = experiment.data
     grp["MyExperiment"].attrs["time started"] = experiment.time_started
 
-and read it back with::
+and read it back with:
 
-    experiment = Experiment(grp["MyExperiment"][:], grp["MyExperiment"].attrs["time started"])
+.. code-block:: python
+
+    experiment = Experiment(
+        data=grp["MyExperiment"][:],
+        time_started=grp["MyExperiment"].attrs["time started"]
+    )
 
 which is fine but:
 
@@ -41,12 +62,22 @@ This represents time spent coding up validation code, which has to be tested,
 and so forth. For short scripts, this can become come to dominate the code.
 Instead, using :py:mod:`h5preserve`, you can write a dump function, and a load
 function, and let :py:mod:`h5preserve` deal with the rest. For the above example,
-reading and writing become::
+reading and writing become:
+
+.. invisible-code-block: python
+
+    registry = Registry("experiment")
+
+.. skip: next
+
+.. code-block:: python
 
     grp["MyExperiment"] = experiment
     experiment = grp["MyExperiment"]
 
-with our dump function being::
+with our dump function being:
+
+.. code-block:: python
 
     @registry.dumper(Experiment, "Experiment", version=1)
     def _exp_dump(experiment):
@@ -57,7 +88,9 @@ with our dump function being::
             }
         )
 
-and our load function being::
+and our load function being:
+
+.. code-block:: python
 
     @registry.loader("Experiment", version=1)
     def _exp_load(dataset):
