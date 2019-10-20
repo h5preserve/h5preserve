@@ -109,14 +109,27 @@ A versioning example
 ....................
 Imagine a class like :py:class:`Experiment` above; you have some data, and some
 metadata (to keep the example simple, we're only going to have one piece of
-metadata, and no data)::
+metadata, and no data):
+
+.. code-block:: python
 
     class ModelOutput:
         def __init__(self, a):
             self.a = a
 
 :py:obj:`a` represents some input parameter to our model. We also write the
-associated dumper and loader::
+associated dumper and loader:
+
+.. invisible-code-block: python
+
+    import numpy as np
+    from h5preserve import (
+        open as h5open, Registry, new_registry_list, DatasetContainer
+    )
+
+    registry = Registry("experiment")
+
+.. code-block:: python
 
     @registry.dumper(ModelOutput, "ModelOutput", version=1)
     def _exp_dump(modeloutput):
@@ -135,13 +148,17 @@ associated dumper and loader::
 However, later on we realise we should have used :py:obj:`b` instead of
 :py:obj:`a`. This could be because we want to radians instead of degrees,
 using :py:obj:`b` is more meaningful in the model, or some other reason we
-have, something which motivates a change to the class. We change our class::
+have, something which motivates a change to the class. We change our class:
+
+.. code-block:: python
 
     class ModelOutput:
         def __init__(self, b):
             self.b = b
 
-and create a new dumper and loader for version 2 of this class::
+and create a new dumper and loader for version 2 of this class:
+
+.. code-block:: python
 
     @registry.dumper(ModelOutput, "ModelOutput", version=2)
     def _exp_dump(modeloutput):
@@ -158,7 +175,9 @@ and create a new dumper and loader for version 2 of this class::
         )
 
 But then, how do we load our old data? Let's assume that :math:`b = 2 a`. So
-we'd write a loader for version 1 which converts :py:obj:`a` to :py:obj:`b`::
+we'd write a loader for version 1 which converts :py:obj:`a` to :py:obj:`b`:
+
+.. code-block:: python
 
     @registry.loader("ModelOutput", version=1)
     def _exp_load(dataset):
@@ -182,7 +201,18 @@ Locking Dumper Version
 It is possible to force which dumper version is going to used, via
 :py:meth:`RegistryContainer.lock_version`. An example how to do this, given :py:class:`Experiment`
 is a class you want to dump version 1 of, and :py:obj:`registries` is a instance of
-:py:class:`~h5preserve.RegistryContainer` which contains a :py:class:`~h5preserve.Registry` that can dump :py:class:`Experiment` is::
+:py:class:`~h5preserve.RegistryContainer` which contains a :py:class:`~h5preserve.Registry` that can dump :py:class:`Experiment` is:
+
+.. invisible-code-block: python
+
+    class Experiment:
+        def __init__(self, data, time_started):
+            self.data = data
+            self.time_started = time_started
+
+.. code-block:: python
+
+    registries = new_registry_list(registry)
 
     registries.lock_version(Experiment, 1)
 
@@ -210,7 +240,9 @@ also takes keyword arguments, as well as an additional :py:obj:`attrs` keyword
 argument. However, these keywords names are used as the name for the subgroup or
 dataset created from the keyword arguments. Modifying the :ref:`quickstart`
 example to have it use a group instead of a dataset is simple, we just change
-the loader as shown below::
+the loader as shown below:
+
+.. code-block:: python
 
     @registry.dumper(Experiment, "Experiment", version=1)
     def _exp_dump(experiment):
@@ -225,7 +257,9 @@ The start time is now written to an attribute on the HDF5 group, and
 :py:obj:`experiment.data` is written to either a dataset or group, depending on
 what type it is. If it was as above a numpy array, then it would be written as a
 dataset (but it would not have :py:obj:`"time started"` as an attribute).
-Loading from a group is the same as loading from a dataset::
+Loading from a group is the same as loading from a dataset:
+
+.. code-block:: python
 
     @registry.loader("Experiment", version=1)
     def _exp_load(group):
@@ -252,7 +286,9 @@ modifications are:
 with no arguments to return the original object (similar to a weakref).
 
 An example of the necessary code for class which subclasses
-:py:class:`collections.abc.MutableMapping` and which stores its members in :py:attr:`_mapping` is::
+:py:class:`collections.abc.MutableMapping` and which stores its members in :py:attr:`_mapping` is:
+
+.. code-block:: python
 
     def __getitem__(self, key):
         value = self._mapping[key]
@@ -282,7 +318,9 @@ necessary location in the class is sufficient in preparing :py:mod:`h5preserve` 
 delayed dumping of the object. When the data is ready to be dumped, calling
 :py:meth:`~h5preserve.DelayedContainer.write_container` dumps the data to the file as if it has been dumped when the
 containing class had been dumped. In a class where it is an attribute which is
-to be dumped later, the following is sufficient::
+to be dumped later, the following is sufficient:
+
+.. code-block:: python
 
     class ContainerClass:
         def __init__(self, data=None):
@@ -349,7 +387,9 @@ To create the Registry Container manually, replace all calls to
 :py:func:`~h5preserve.new_registry_list` with :py:class:`~h5preserve.RegistryContainer`.
 This will allow you to select which built-in registries (if any) you which to
 use. For example, if you only want to convert :py:obj:`None` to
-:py:class:`h5py.Empty`, you would do::
+:py:class:`h5py.Empty`, you would do:
+
+.. code-block:: python
 
     from h5preserve import Registry, RegistryContainer
     from h5preserve.additional_registries import none_python_registry
