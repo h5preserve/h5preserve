@@ -21,3 +21,7 @@ prune **/__pycache__
 prune **/*.pyc
 prune **/*.swp
 prune **/*.swo
+exclude .circleci
+recursive-exclude .circleci *
+exclude .builds
+recursive-exclude .builds *
