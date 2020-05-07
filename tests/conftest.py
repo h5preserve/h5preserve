@@ -5,8 +5,6 @@ import pytest
 
 from collections import namedtuple, MutableMapping
 
-import six
-
 import numpy as np
 import h5py
 from h5py import File
