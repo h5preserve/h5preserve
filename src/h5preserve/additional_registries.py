@@ -57,9 +57,9 @@ builtin_text_registry.loader("text", version=None)(as_dataset_loader)
 
 
 @sequence_as_dataset_registry.dumper(list, "list", version=None)
-def _list_dumper(l):
+def _list_dumper(list_):
     # pylint: disable=missing-docstring
-    return DatasetContainer(data=asarray(l))
+    return DatasetContainer(data=asarray(list_))
 
 
 @sequence_as_dataset_registry.loader("list", version=None)
@@ -69,9 +69,9 @@ def _list_loader(dataset):
 
 
 @sequence_as_dataset_registry.dumper(tuple, "tuple", version=None)
-def _tuple_dumper(t):
+def _tuple_dumper(tuple_):
     # pylint: disable=missing-docstring
-    return DatasetContainer(data=asarray(t))
+    return DatasetContainer(data=asarray(tuple_))
 
 
 @sequence_as_dataset_registry.loader("tuple", version=None)
