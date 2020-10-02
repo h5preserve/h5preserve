@@ -331,6 +331,7 @@ class RegistryContainer(MutableSequence):
             try:
                 label, dumper = dumpers[version]
             except KeyError:
+                # pylint: disable=raise-missing-from
                 raise RuntimeError(NO_VERSION.format(val_type, version))
         else:
             if None in dumpers:
@@ -405,6 +406,7 @@ class RegistryContainer(MutableSequence):
         try:
             return loaders[any]
         except KeyError:
+            # pylint: disable=raise-missing-from
             raise RuntimeError(
                 NO_SUITABLE_LOADER.format(obj._label, obj._version)
             )
@@ -441,7 +443,7 @@ class OnDemandBase(ContainerBase):
     # pylint: disable=abstract-method,missing-docstring
     def __init__(self, attrs=None):
         self._ref = None
-        super(OnDemandBase, self).__init__(attrs)
+        super().__init__(attrs)
         self._on_demand = True
 
 
@@ -458,7 +460,7 @@ class GroupContainer(ContainerBase):
         datasets or subgroups to add to the group
     """
     def __init__(self, attrs=None, **kwargs):
-        super(GroupContainer, self).__init__(attrs)
+        super().__init__(attrs)
         self._group_members = {}
         self.update(kwargs)
 
@@ -510,7 +512,7 @@ class DatasetContainer(ContainerBase):
         properties of the group, which get passed to create group
     """
     def __init__(self, attrs=None, **kwargs):
-        super(DatasetContainer, self).__init__(attrs)
+        super().__init__(attrs)
         self._dataset_members = {}
         self.update(kwargs)
 
@@ -755,7 +757,7 @@ class H5PreserveFile(H5PreserveGroup):
     """
     def __init__(self, h5py_file, registries):
         self._h5py_file = h5py_file
-        super(H5PreserveFile, self).__init__(
+        super().__init__(
             h5py_group=self._h5py_file["/"],
             registries=registries
         )
