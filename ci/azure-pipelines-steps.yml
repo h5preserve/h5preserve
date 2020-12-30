@@ -32,6 +32,7 @@ steps:
   displayName: 'Upload to codecov.io'
 
 - script: |
-    'twine upload --skip-existing -r {feedName/EndpointName} --config-file $(PYPIRC_PATH) {package path to publish}'
+    python setup.py sdist bdist_wheel
+    twine upload --skip-existing -r {feedName/EndpointName} --config-file $(PYPIRC_PATH) {package path to publish}
   displayName: 'Upload to PyPI'
   condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/')
