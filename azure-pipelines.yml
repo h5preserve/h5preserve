@@ -1,5 +1,6 @@
 # from matplotlib's azure setup
 
+
 schedules:
 - cron: "0 0 * * 4"
   displayName: Weekly build
@@ -7,6 +8,15 @@ schedules:
     include:
     - releases/*
   always: true
+
+
+trigger:
+  tags:
+    include:
+    - '*'
+  branches:
+    include:
+    - '*'
 
 
 variables:
