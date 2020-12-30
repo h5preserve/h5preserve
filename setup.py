@@ -18,7 +18,7 @@ setuptools.setup(
     packages = setuptools.find_packages('src'),
     package_dir = {'': 'src'},
     install_requires = [
-        "h5py",
+        "h5py<3",
     ],
     python_requires = '>=3.5',
     author = "James Tocknell",
