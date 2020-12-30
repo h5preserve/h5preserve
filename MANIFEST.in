@@ -14,8 +14,9 @@ recursive-include paper *
 include pylintrc
 include tox.ini
 include pypi-intro.rst
-exclude appveyor.yml
 exclude bors.toml
+exclude azure-pipelines.yml
+recursive-exclude ci *
 exclude docs/my_data_file.hdf5
 prune **/__pycache__
 prune **/*.pyc
