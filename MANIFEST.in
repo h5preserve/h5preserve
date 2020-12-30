@@ -16,6 +16,7 @@ include tox.ini
 include pypi-intro.rst
 exclude bors.toml
 exclude azure-pipelines.yml
+exclude codecov.yml
 recursive-exclude ci *
 exclude docs/my_data_file.hdf5
 prune **/__pycache__
