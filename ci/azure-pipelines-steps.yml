@@ -8,8 +8,13 @@ steps:
 
 - script: |
     python -m pip install --upgrade pip
-    pip install tox codecov
+    pip install tox codecov twine
   displayName: 'Install pip dependencies'
+
+- task: TwineAuthenticate@0
+  inputs:
+    externalFeeds: 'pypi'
+  condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/')
 
 - script: env
   displayName: 'print env'
@@ -25,3 +30,8 @@ steps:
 - script: |
     bash <(curl -s https://codecov.io/bash)
   displayName: 'Upload to codecov.io'
+
+- script: |
+    'twine upload --skip-existing -r {feedName/EndpointName} --config-file $(PYPIRC_PATH) {package path to publish}'
+  displayName: 'Upload to PyPI'
+  condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/')
