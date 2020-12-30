@@ -1,5 +1,14 @@
 # from matplotlib's azure setup
 
+schedules:
+- cron: "0 0 * * 4"
+  displayName: Weekly build
+  branches:
+    include:
+    - releases/*
+  always: true
+
+
 variables:
   PIP_CACHE_DIR: $(Pipeline.Workspace)/cache/pip
 
