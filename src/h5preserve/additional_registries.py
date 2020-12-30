@@ -49,11 +49,20 @@ bool_python_registry.loader("bool", version=None)(
 builtin_text_registry.dumper(bytes, "ascii", version=None)(
     as_dataset_dumper
 )
+builtin_text_registry.loader("ascii", version=None)(as_dataset_loader)
+
 builtin_text_registry.dumper(str, "text", version=None)(
     as_dataset_dumper
 )
-builtin_text_registry.loader("ascii", version=None)(as_dataset_loader)
-builtin_text_registry.loader("text", version=None)(as_dataset_loader)
+
+
+@builtin_text_registry.loader("text", version=None)
+def _str_loader(dataset):
+    # pylint: disable=missing-docstring
+    data = dataset["data"]
+    if isinstance(data, str):
+        return data
+    return data.decode("utf-8")
 
 
 @sequence_as_dataset_registry.dumper(list, "list", version=None)

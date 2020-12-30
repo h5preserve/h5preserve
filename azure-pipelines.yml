@@ -36,9 +36,9 @@ jobs:
       py38:
         python.version: '3.8'
         TOXENV: py38
-#      py39:
-#        python.version: '3.9'
-#        TOXENV: py39
+      py39:
+        python.version: '3.9'
+        TOXENV: py39
     maxParallel: 4
 
   steps:
@@ -57,9 +57,9 @@ jobs:
       py38:
         python.version: '3.8'
         TOXENV: py38
-#      py39:
-#        python.version: '3.9'
-#        TOXENV: py39
+      py39:
+        python.version: '3.9'
+        TOXENV: py39
     maxParallel: 4
 
   steps:

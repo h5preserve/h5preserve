@@ -859,7 +859,7 @@ if hasattr(h5py, "Empty"):
 
 @pytest.fixture
 def h5py_file(tmpdir):
-    file = File(str(tmpdir.join("test.hdf5")))
+    file = File(str(tmpdir.join("test.hdf5")), 'x')
     def fin():
         file.close()
     return file
