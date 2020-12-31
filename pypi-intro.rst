@@ -8,8 +8,8 @@ and the hdf5_ library.
 
 .. |Documentation Status| image:: https://readthedocs.org/projects/h5preserve/badge/?version=latest
    :target: https://h5preserve.readthedocs.org/en/latest/?badge=latest
-.. |Build Status| image:: https://travis-ci.org/h5preserve/h5preserve.svg?branch=master
-   :target: https://travis-ci.org/h5preserve/h5preserve
+.. |Build Status| image:: https://dev.azure.com/jamestocknell/h5preserve/_apis/build/status/h5preserve.h5preserve?branchName=master
+   :target: https://dev.azure.com/jamestocknell/h5preserve/_build/latest?definitionId=4&branchName=master
 .. |Coverage Status| image:: https://codecov.io/github/h5preserve/h5preserve/coverage.svg?branch=master
    :target: https://codecov.io/github/h5preserve/h5preserve?branch=master
 .. |DOI| image:: https://zenodo.org/badge/DOI/10.5281/zenodo.593007.svg
