@@ -1,5 +1,6 @@
 # from matplotlib's azure setup
 
+
 schedules:
 - cron: "0 0 * * 4"
   displayName: Weekly build
@@ -7,6 +8,15 @@ schedules:
     include:
     - releases/*
   always: true
+
+
+trigger:
+  tags:
+    include:
+    - '*'
+  branches:
+    include:
+    - '*'
 
 
 variables:
@@ -45,9 +55,9 @@ jobs:
       py38:
         python.version: '3.8'
         TOXENV: py38
-#      py39:
-#        python.version: '3.9'
-#        TOXENV: py39
+      py39:
+        python.version: '3.9'
+        TOXENV: py39
     maxParallel: 4
 
   steps:
@@ -66,9 +76,9 @@ jobs:
       py38:
         python.version: '3.8'
         TOXENV: py38
-#      py39:
-#        python.version: '3.9'
-#        TOXENV: py39
+      py39:
+        python.version: '3.9'
+        TOXENV: py39
     maxParallel: 4
 
   steps:
