@@ -8,7 +8,7 @@ steps:
 
 - script: |
     python -m pip install --upgrade pip
-    pip install tox codecov twine
+    pip install tox codecov twine wheel
   displayName: 'Install pip dependencies'
 
 - task: TwineAuthenticate@0
@@ -33,6 +33,6 @@ steps:
 
 - script: |
     python setup.py sdist bdist_wheel
-    twine upload --skip-existing -r {feedName/EndpointName} --config-file $(PYPIRC_PATH) {package path to publish}
+    twine upload --skip-existing -r pypi --config-file $(PYPIRC_PATH) dist/*
   displayName: 'Upload to PyPI'
   condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/')
