@@ -1,5 +1,5 @@
 [![Documentation Status](https://readthedocs.org/projects/h5preserve/badge/?version=latest)](https://h5preserve.readthedocs.org/en/latest/?badge=latest)
-[![Build Status](https://travis-ci.org/h5preserve/h5preserve.svg?branch=master)](https://travis-ci.org/h5preserve/h5preserve)
+[![Build Status](https://dev.azure.com/jamestocknell/h5preserve/_apis/build/status/h5preserve.h5preserve?branchName=master)](https://dev.azure.com/jamestocknell/h5preserve/_build/latest?definitionId=4&branchName=master)
 [![Coverage Status](https://codecov.io/github/h5preserve/h5preserve/coverage.svg?branch=master)](https://codecov.io/github/h5preserve/h5preserve?branch=master)
 [![Version](https://img.shields.io/pypi/v/h5preserve.svg)](https://pypi.python.org/pypi/h5preserve/)
 [![License](https://img.shields.io/pypi/l/h5preserve.svg)](https://pypi.python.org/pypi/h5preserve/)
