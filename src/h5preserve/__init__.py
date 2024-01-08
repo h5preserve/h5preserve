@@ -483,7 +483,7 @@ class GroupContainer(ContainerBase):
         return "GroupContainer(attrs={attrs!r}, {group_items})".format(
             attrs=self.attrs,
             group_items=", ".join(
-                "{key!r}={val!r}".format(key=key, val=val)
+                "{key}={val!r}".format(key=key, val=val)
                 for key, val in self._group_members.items()
                 if val is not None
             )
@@ -540,7 +540,7 @@ class DatasetContainer(ContainerBase):
         return "DatasetContainer(attrs={attrs!r}, {dataset})".format(
             attrs=self.attrs,
             dataset=", ".join(
-                "{key!r}={val!r}".format(key=key, val=val)
+                "{key}={val!r}".format(key=key, val=val)
                 for key, val in self._dataset_members.items()
                 if val is not None
             )
