@@ -26,13 +26,13 @@ variables:
 jobs:
 - job: 'static_checks'
   pool:
-    vmImage: ubuntu-20.04
+    vmImage: ubuntu-22.04
   variables:
     TOXENV: flake8,pylint,docs,doctest,check-manifest,checkreadme
   steps:
     - task: UsePythonVersion@0
       inputs:
-        versionSpec: '3.8'
+        versionSpec: '3.12'
         architecture: 'x64'
     - script: |
         pip install tox
@@ -43,12 +43,9 @@ jobs:
 
 - job: 'ubuntu'
   pool:
-    vmImage: ubuntu-20.04
+    vmImage: ubuntu-22.04
   strategy:
     matrix:
-      py36:
-        python.version: '3.6'
-        TOXENV: py36
       py37:
         python.version: '3.7'
         TOXENV: py37
@@ -61,30 +58,14 @@ jobs:
       py310:
         python.version: '3.10'
         TOXENV: py310
-    maxParallel: 4
+      py311:
+        python.version: '3.11'
+        TOXENV: py311
+      py312:
+        python.version: '3.12'
+        TOXENV: py312
 
   steps:
     - template: ci/azure-pipelines-steps.yml
       parameters:
         platform: linux
-
-- job: 'macOS'
-  pool:
-    vmImage: macOS-10.15
-  strategy:
-    matrix:
-      py37:
-        python.version: '3.7'
-        TOXENV: py37
-      py38:
-        python.version: '3.8'
-        TOXENV: py38
-      py39:
-        python.version: '3.9'
-        TOXENV: py39
-    maxParallel: 4
-
-  steps:
-    - template: ci/azure-pipelines-steps.yml
-      parameters:
-        platform: macos
