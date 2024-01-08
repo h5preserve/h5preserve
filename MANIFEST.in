@@ -1,3 +1,4 @@
+include .readthedocs.yaml
 include versioneer.py h5preserve/_version.py
 include DESCRIPTION.rst
 include README.md
