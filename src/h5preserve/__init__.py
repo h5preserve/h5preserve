@@ -46,7 +46,7 @@ log = getLogger(__name__)
 ALLOWED_DATASET_KEYS = {
     "attrs", "shape", "dtype", "data", "chunks", "maxshape", "fillvalue",
     "compression", "compression_opts", "scaleoffset", "shuffle",
-    "fletcher32", "fillvalue", "track_times",
+    "fletcher32", "track_times",
 }
 
 UNKNOWN_NAMESPACE = "Unknown namespace {}."

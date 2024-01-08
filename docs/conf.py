@@ -20,7 +20,7 @@ import shlex
 try:
     import h5py
 except ImportError:
-    import mock
+    import unittest.mock as mock
 
     MOCK_MODULES = ['numpy', 'h5py']
     for mod_name in MOCK_MODULES:
@@ -47,8 +47,7 @@ extensions = [
     'sphinx.ext.todo',
     'sphinx.ext.coverage',
     'sphinx.ext.viewcode',
-    #'sphinx.ext.napoleon',
-    'sphinxcontrib.napoleon', # numpy fix not in latest sphinx release
+    'sphinx.ext.napoleon',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -85,7 +84,7 @@ release = h5preserve.__version__
 #
 # This is also used if you do content translation via gettext catalogs.
 # Usually you set "language" from the command line for these cases.
-language = None
+language = "en"
 
 # There are two options for replacing |today|: either, you set today to some
 # non-false value, then it is used:

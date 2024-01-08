@@ -3,7 +3,8 @@ from __future__ import print_function
 
 import pytest
 
-from collections import namedtuple, MutableMapping
+from collections import namedtuple
+from collections.abc import MutableMapping
 
 import numpy as np
 import h5py
@@ -32,7 +33,7 @@ def get_fixture_val(fix, request):
 
 
 ### Classes for testng ###
-class Experiment(object):
+class Experiment:
     def __init__(self, data, time_started):
         self.data = data
         self.time_started = time_started
@@ -43,7 +44,7 @@ class Experiment(object):
             self.time_started == other.time_started
         )
 
-class OnDemandExperiment(object):
+class OnDemandExperiment:
     def __init__(self, data, time_started):
         self._data = data
         self.time_started = time_started
@@ -152,7 +153,7 @@ class Solutions(MutableMapping):
         return False
 
 
-class Run(object):
+class Run:
     """
     Container holding a single run
     """
