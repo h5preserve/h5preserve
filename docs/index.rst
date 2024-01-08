@@ -53,10 +53,10 @@ Indices and tables
 * :ref:`modindex`
 * :ref:`search`
 
-.. _h5py: http://www.h5py.org/
+.. _h5py: https://www.h5py.org/
 .. _hdf5: https://support.hdfgroup.org/HDF5/
 .. _Camel: https://eev.ee/release/2015/10/15/dont-use-pickle-use-camel/
 .. _philosophy: https://camel.readthedocs.io/en/latest/camel.html#camel-s-philosophy
-.. _pytables: http://www.pytables.org/
-.. _`JOSS Paper`: http://joss.theoj.org/papers/10.21105/joss.00581/
-.. _numpy: https://www.numpy.org/
+.. _pytables: https://www.pytables.org/
+.. _`JOSS Paper`: https://joss.theoj.org/papers/10.21105/joss.00581/
+.. _numpy: https://numpy.org/

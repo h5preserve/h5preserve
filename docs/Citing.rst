@@ -29,6 +29,6 @@ We also strongly encourage citing the dependencies of h5preserve, `numpy`_ and
 `h5py`_.
 
 
-.. _`JOSS Paper`: http://joss.theoj.org/papers/10.21105/joss.00581/
-.. _`numpy`: https://www.scipy.org/citing.html
+.. _`JOSS Paper`: https://joss.theoj.org/papers/10.21105/joss.00581/
+.. _`numpy`: https://numpy.org/citing-numpy/
 .. _`h5py`: https://github.com/h5py/h5py/issues/743
